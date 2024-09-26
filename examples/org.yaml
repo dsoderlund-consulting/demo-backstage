@@ -1,0 +1,17 @@
+---
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-user
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: ds
+spec:
+  memberOf: [dsoderlund.consulting]
+---
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-group
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: dsoderlund.consulting
+spec:
+  type: team
+  children: []

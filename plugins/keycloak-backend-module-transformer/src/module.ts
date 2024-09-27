@@ -19,11 +19,16 @@ const customGroupTransformer: GroupTransformer = async (
 };
 const customUserTransformer: UserTransformer = async (
   entity,
-  // user,
+  user,
   // realm,
   // groups,
 ) => {
+  entity.spec.profile = {
+    displayName: user.username,
+    email: user.email,
+  };
   /* apply transformations */
+
   return entity;
 };
 
@@ -37,7 +42,7 @@ export const keycloakModuleTransformer = createBackendModule({
         keycloak: keycloakTransformerExtensionPoint,
       },
       async init({ logger, keycloak }) {
-        logger.info('Starting keycloak plugin');
+        logger.debug('setting up davids keycloak transformers');
         keycloak.setUserTransformer(customUserTransformer);
         keycloak.setGroupTransformer(customGroupTransformer);
       },

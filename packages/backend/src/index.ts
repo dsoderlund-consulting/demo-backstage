@@ -57,4 +57,8 @@ backend.add(
   import('@internal/backstage-plugin-keycloak-backend-module-transformer'),
 );
 
+// oauth2proxy provider
+backend.add(
+  import('@backstage/plugin-auth-backend-module-oauth2-proxy-provider'),
+);
 backend.start();

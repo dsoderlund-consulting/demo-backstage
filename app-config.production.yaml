@@ -30,7 +30,10 @@ backend:
 
 auth:
   providers:
-    guest: {}
+    oauth2Proxy:
+      signIn:
+        resolvers:
+          - resolver: emailMatchingUserEntityProfileEmail
 
 catalog:
   providers:

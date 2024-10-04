@@ -2,13 +2,18 @@ import {
   coreServices,
   createBackendModule,
 } from '@backstage/backend-plugin-api';
-import { oauth2ProxyAuthenticator } from '@backstage/plugin-auth-backend-module-oauth2-proxy-provider';
+import {
+  oauth2ProxyAuthenticator,
+  OAuth2ProxyResult,
+} from '@backstage/plugin-auth-backend-module-oauth2-proxy-provider';
 import {
   authProvidersExtensionPoint,
+  AuthResolverContext,
   createProxyAuthProviderFactory,
+  SignInInfo,
 } from '@backstage/plugin-auth-node';
 
-const oauth2istioAuth = createBackendModule({
+export const oauth2istioAuth = createBackendModule({
   pluginId: 'auth',
   moduleId: 'oauth2istioAuth-provider',
   register(reg) {
@@ -19,11 +24,15 @@ const oauth2istioAuth = createBackendModule({
       },
       async init({ logger, providers }) {
         providers.registerProvider({
-          providerId: 'oauth2proxy',
+          providerId: 'oauth2Proxy',
           factory: createProxyAuthProviderFactory({
             authenticator: oauth2ProxyAuthenticator,
-            async signInResolver(info, ctx) {
+            signInResolver: async (
+              info: SignInInfo<OAuth2ProxyResult>,
+              ctx: AuthResolverContext,
+            ) => {
               const email = info.result.getHeader('x-auth-request-email');
+              logger.info(JSON.stringify(info.result.headers));
               if (!email) {
                 logger.error('Could not find an email for the user.');
                 throw new Error('User profile contained no email');
@@ -39,4 +48,3 @@ const oauth2istioAuth = createBackendModule({
     });
   },
 });
-export default oauth2istioAuth;

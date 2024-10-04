@@ -7,7 +7,7 @@
  */
 
 import { createBackend } from '@backstage/backend-defaults';
-import oauth2istioAuth from './oauth2istioAuth';
+import { oauth2istioAuth } from './oauth2istioAuth';
 
 const backend = createBackend();
 
@@ -58,6 +58,6 @@ backend.add(
   import('@internal/backstage-plugin-keycloak-backend-module-transformer'),
 );
 
-// oauth2proxy provider
+// oauth2Proxy provider
 backend.add(oauth2istioAuth);
 backend.start();

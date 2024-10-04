@@ -58,7 +58,7 @@ const app = createApp({
   },
   components: {
     SignInPage: props => (
-      <ProxiedSignInPage {...props} provider="oauth2istioAuth" />
+      <ProxiedSignInPage {...props} provider="oauth2Proxy" />
     ),
   },
 });

@@ -30,12 +30,14 @@ import {
   AlertDisplay,
   OAuthRequestDialog,
   ProxiedSignInPage,
+  SignInPage,
 } from '@backstage/core-components';
 import { createApp } from '@backstage/app-defaults';
 import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
+import { configApiRef, googleAuthApiRef, useApi } from '@backstage/core-plugin-api';
 
 const app = createApp({
   apis,
@@ -57,9 +59,23 @@ const app = createApp({
     });
   },
   components: {
-    SignInPage: props => (
-      <ProxiedSignInPage {...props} provider="oauth2Proxy" />
-    ),
+    SignInPage: props => {
+      const configApi = useApi(configApiRef);
+      if (configApi.getString('auth.environment') === 'development') {
+        return (
+          <SignInPage
+            {...props}
+            provider={{
+              id: 'google-auth-provider',
+              title: 'Google',
+              message: 'Sign In using Google',
+              apiRef: googleAuthApiRef,
+            }}
+          />
+        );
+      }
+      return <ProxiedSignInPage {...props} provider="oauth2Proxy" />
+    },
   },
 });
 

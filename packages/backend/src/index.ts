@@ -58,6 +58,9 @@ backend.add(
   import('@internal/backstage-plugin-keycloak-backend-module-transformer'),
 );
 
+// google auth for local
+backend.add(import('@backstage/plugin-auth-backend-module-google-provider'));
+
 // oauth2Proxy provider
 backend.add(oauth2istioAuth);
 backend.start();

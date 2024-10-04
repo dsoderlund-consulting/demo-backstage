@@ -24,9 +24,12 @@ const customUserTransformer: UserTransformer = async (
   // groups,
 ) => {
   entity.spec.profile = {
-    displayName: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.firstName ?? user.lastName ?? user.username,
+    displayName:
+      user.firstName && user.lastName
+        ? `${user.firstName} ${user.lastName}`
+        : user.firstName ?? user.lastName ?? user.username,
     email: user.email,
-    picture: user.attributes?.profile_picture,
+    picture: user.attributes?.profile_picture[0],
   };
   /* apply transformations */
 

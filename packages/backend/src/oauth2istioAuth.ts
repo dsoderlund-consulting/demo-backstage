@@ -32,7 +32,6 @@ export const oauth2istioAuth = createBackendModule({
               ctx: AuthResolverContext,
             ) => {
               const email = info.result.getHeader('x-auth-request-email');
-              logger.info(JSON.stringify(info.result.headers));
               if (!email) {
                 logger.error('Could not find an email for the user.');
                 throw new Error('User profile contained no email');

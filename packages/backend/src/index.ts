@@ -7,6 +7,7 @@
  */
 
 import { createBackend } from '@backstage/backend-defaults';
+import oauth2istioAuth from './oauth2istioAuth';
 
 const backend = createBackend();
 
@@ -58,7 +59,5 @@ backend.add(
 );
 
 // oauth2proxy provider
-backend.add(
-  import('@backstage/plugin-auth-backend-module-oauth2-proxy-provider'),
-);
+backend.add(oauth2istioAuth);
 backend.start();

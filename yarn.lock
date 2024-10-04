@@ -14146,6 +14146,7 @@ __metadata:
   resolution: "backend@workspace:packages/backend"
   dependencies:
     "@backstage/backend-defaults": "npm:^0.5.0"
+    "@backstage/backend-plugin-api": "npm:^1.0.0"
     "@backstage/cli": "npm:^0.27.1"
     "@backstage/config": "npm:^1.2.0"
     "@backstage/plugin-app-backend": "npm:^0.3.74"

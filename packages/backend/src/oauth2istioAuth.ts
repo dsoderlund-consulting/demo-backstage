@@ -10,7 +10,7 @@ import {
 
 const oauth2istioAuth = createBackendModule({
   pluginId: 'auth',
-  moduleId: 'custom-auth-provider',
+  moduleId: 'oauth2istioAuth-provider',
   register(reg) {
     reg.registerInit({
       deps: {

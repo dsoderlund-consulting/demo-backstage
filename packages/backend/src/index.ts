@@ -13,14 +13,21 @@ const backend = createBackend();
 
 backend.add(import('@backstage/plugin-app-backend/alpha'));
 backend.add(import('@backstage/plugin-proxy-backend/alpha'));
-backend.add(import('@backstage/plugin-scaffolder-backend/alpha'));
 backend.add(import('@backstage/plugin-techdocs-backend/alpha'));
 
 // auth plugin
 backend.add(import('@backstage/plugin-auth-backend'));
-// See https://backstage.io/docs/backend-system/building-backends/migrating#the-auth-plugin
-// backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
-// See https://backstage.io/docs/auth/guest/provider
+// keycloak
+backend.add(import('@janus-idp/backstage-plugin-keycloak-backend/alpha'));
+backend.add(
+  import('@internal/backstage-plugin-keycloak-backend-module-transformer'),
+);
+
+// google auth for local
+backend.add(import('@backstage/plugin-auth-backend-module-google-provider'));
+
+// oauth2Proxy provider
+backend.add(oauth2istioAuth);
 
 // catalog plugin
 backend.add(import('@backstage/plugin-catalog-backend/alpha'));
@@ -52,15 +59,10 @@ backend.add(import('@backstage/plugin-search-backend-module-techdocs/alpha'));
 // kubernetes
 backend.add(import('@backstage/plugin-kubernetes-backend/alpha'));
 
-// keycloak
-backend.add(import('@janus-idp/backstage-plugin-keycloak-backend/alpha'));
-backend.add(
-  import('@internal/backstage-plugin-keycloak-backend-module-transformer'),
-);
+// scaffolder
+backend.add(import('@backstage/plugin-scaffolder-backend/alpha'));
+// github
+backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
 
-// google auth for local
-backend.add(import('@backstage/plugin-auth-backend-module-google-provider'));
-
-// oauth2Proxy provider
-backend.add(oauth2istioAuth);
+// And there was backend
 backend.start();

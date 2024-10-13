@@ -70,7 +70,10 @@ auth:
           - resolver: emailMatchingUserEntityProfileEmail
 
 scaffolder:
-  # see https://backstage.io/docs/features/software-templates/configuration for software template options
+  defaultAuthor:
+    name: "demo.dsoderlund.consulting"
+    email: "demo@dsoderlund.consulting"
+  defaultCommitMessage: "Generated through template at demo.dsoderlund.consulting"
 
 catalog:
   providers:

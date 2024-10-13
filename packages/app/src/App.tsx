@@ -25,6 +25,8 @@ import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
 import { searchPage } from './components/search/SearchPage';
 import { Root } from './components/Root';
+import LightIcon from '@material-ui/icons/WbSunny';
+import DarkIcon from '@material-ui/icons/NightsStay';
 
 import {
   AlertDisplay,
@@ -37,7 +39,13 @@ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
-import { configApiRef, googleAuthApiRef, useApi } from '@backstage/core-plugin-api';
+import {
+  configApiRef,
+  googleAuthApiRef,
+  useApi,
+} from '@backstage/core-plugin-api';
+import { UnifiedThemeProvider } from '@backstage/theme';
+import { dsTheme } from './themes/dsTheme';
 
 const app = createApp({
   apis,
@@ -58,6 +66,26 @@ const app = createApp({
       catalogIndex: catalogPlugin.routes.catalogIndex,
     });
   },
+  themes: [
+    {
+      id: 'ds-theme',
+      title: 'dsoderlund.consulting theme',
+      variant: 'light',
+      icon: <LightIcon />,
+      Provider: ({ children }) => (
+        <UnifiedThemeProvider theme={dsTheme} children={children} />
+      ),
+    },
+    {
+      id: 'ds-theme',
+      title: 'dsoderlund.consulting theme',
+      variant: 'dark',
+      icon: <DarkIcon />,
+      Provider: ({ children }) => (
+        <UnifiedThemeProvider theme={dsTheme} children={children} />
+      ),
+    },
+  ],
   components: {
     SignInPage: props => {
       const configApi = useApi(configApiRef);
@@ -74,7 +102,7 @@ const app = createApp({
           />
         );
       }
-      return <ProxiedSignInPage {...props} provider="oauth2Proxy" />
+      return <ProxiedSignInPage {...props} provider="oauth2Proxy" />;
     },
   },
 });

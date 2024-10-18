@@ -63,7 +63,15 @@ techdocs:
     type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
 
 auth:
+  environment: development
   providers:
+    google:
+      development:
+        clientId: ${GOOGLE_CLIENTID}
+        clientSecret: ${GOOGLE_CLIENTSECRET}
+        signIn:
+          resolvers:
+            - resolver: emailMatchingUserEntityProfileEmail
     oauth2Proxy:
       signIn:
         resolvers:
@@ -74,6 +82,7 @@ scaffolder:
     name: "demo.dsoderlund.consulting"
     email: "demo@dsoderlund.consulting"
   defaultCommitMessage: "Generated through template at demo.dsoderlund.consulting"
+
 
 catalog:
   providers:
@@ -96,21 +105,13 @@ catalog:
   rules:
     - allow: [Component, System, API, Resource, Location]
   locations:
-    # Local example data, file locations are relative to the backend process, typically `packages/backend`
-    - type: file
-      target: ../../examples/entities.yaml
-
     # Local example template
     - type: file
       target: ../../examples/template/template.yaml
       rules:
         - allow: [Template]
 
-    # Local example organizational data
-    - type: file
-      target: ../../examples/org.yaml
-      rules:
-        - allow: [User, Group]
+
 
     ## Uncomment these lines to add more example data
     # - type: url

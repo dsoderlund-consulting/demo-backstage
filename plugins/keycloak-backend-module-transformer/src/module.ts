@@ -4,8 +4,8 @@ import {
 } from '@backstage/backend-plugin-api';
 
 import {
-  GroupTransformer,
   keycloakTransformerExtensionPoint,
+  GroupTransformer,
   UserTransformer,
 } from '@janus-idp/backstage-plugin-keycloak-backend';
 
@@ -14,7 +14,6 @@ const customGroupTransformer: GroupTransformer = async (
   // realm,
   // groups,
 ) => {
-  /* apply transformations */
   return entity;
 };
 const customUserTransformer: UserTransformer = async (
@@ -23,15 +22,19 @@ const customUserTransformer: UserTransformer = async (
   // realm,
   // groups,
 ) => {
+  if (user.username) {
+    entity.metadata.name = user.username?.replace('@', '-');
+  }
   entity.spec.profile = {
     displayName:
+      // If they have a first name and last name, use those together.
+      // Else use email replacing
       user.firstName && user.lastName
         ? `${user.firstName} ${user.lastName}`
-        : user.firstName ?? user.lastName ?? user.username,
+        : user.email,
     email: user.email,
     picture: user.attributes?.profile_picture[0],
   };
-  /* apply transformations */
 
   return entity;
 };

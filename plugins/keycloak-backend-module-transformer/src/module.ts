@@ -11,9 +11,14 @@ import {
 
 const customGroupTransformer: GroupTransformer = async (
   entity,
+  group,
   // realm,
   // groups,
 ) => {
+  entity.metadata.links = group.attributes?.link.map((l: string) => {
+    return {url: l}
+   }
+   );
   return entity;
 };
 const customUserTransformer: UserTransformer = async (

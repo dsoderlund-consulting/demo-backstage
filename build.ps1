@@ -18,3 +18,6 @@ if(test-path($f))
     git push
 }
 pop-location
+
+argocd login argocd.mgmt.dsoderlund.consulting --sso --grpc-web --name mgmt
+argocd app sync backstage

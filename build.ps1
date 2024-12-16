@@ -2,7 +2,11 @@ $newversion = '0.1.9'
 $repo = 'docker.io/dsoderlund/demo-backstage'
 $image = "{0}:{1}" -f $repo, $newversion
 echo $image
+if(-not $pat) {
+    $pat = Read-Host -Prompt "Docker PAT"
+}
 podman images $image
+podman login -u dsoderlund docker.io -p $pat
 podman build -t $image .
 podman push $image
 

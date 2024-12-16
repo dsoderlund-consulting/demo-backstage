@@ -1,0 +1,14 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  namespace: default
+  annotations:
+    backstage.io/managed-by-location: url:https://github.com/dsoderlund-consulting/demo-backstage/blob/main/ds-templates/all-templates.yaml
+    backstage.io/managed-by-origin-location: url:https://github.com/dsoderlund-consulting/demo-backstage/blob/main/ds-templates/all-templates.yaml
+    backstage.io/view-url: https://github.com/dsoderlund-consulting/demo-backstage/blob/main/ds-templates/all-templates.yaml
+    backstage.io/edit-url: https://github.com/dsoderlund-consulting/demo-backstage/edit/main/ds-templates/all-templates.yaml
+    backstage.io/source-location: url:https://github.com/dsoderlund-consulting/demo-backstage/tree/main/ds-templates/
+  name: all-ds-templates
+spec:
+  type: url
+  target: https://github.com/dsoderlund-consulting/demo-backstage/blob/main/ds-templates/example-nodejs-template/template.yaml

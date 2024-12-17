@@ -17,7 +17,7 @@ export const dsTheme = createUnifiedTheme({
         main: '#565a6e',
       },
       error: {
-        main: '#323F32',
+        main: '#EE7700',
       },
       warning: {
         main: '#8f5e15',
@@ -34,11 +34,11 @@ export const dsTheme = createUnifiedTheme({
       },
       banner: {
         info: '#34548a',
-        error: '#323F32',
+        error: '#EE7700',
         text: '#343b58',
         link: '#565a6e',
       },
-      errorBackground: '#323F32',
+      errorBackground: '#EE7700',
       warningBackground: '#8f5e15',
       infoBackground: '#343b58',
       navigation: {

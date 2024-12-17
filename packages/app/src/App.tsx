@@ -89,7 +89,7 @@ const app = createApp({
   components: {
     SignInPage: props => {
       const configApi = useApi(configApiRef);
-      if (configApi.getString('auth.environment') === 'development') {
+      if (configApi.getOptionalString('auth.environment') === 'development') {
         return (
           <SignInPage
             {...props}

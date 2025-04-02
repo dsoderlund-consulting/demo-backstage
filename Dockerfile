@@ -2,12 +2,13 @@
 FROM node:20-bookworm-slim AS packages
 
 WORKDIR /app
-COPY package.json yarn.lock ./
+COPY backstage.json package.json yarn.lock ./
 COPY .yarn ./.yarn
 COPY .yarnrc.yml ./
 
 COPY packages packages
 
+# Comment this out if you don't have any internal plugins
 COPY plugins plugins
 
 RUN find packages \! -name "package.json" -mindepth 2 -maxdepth 2 -exec rm -rf {} \+
@@ -29,8 +30,6 @@ USER node
 WORKDIR /app
 
 COPY --from=packages --chown=node:node /app .
-COPY --from=packages --chown=node:node /app/.yarn ./.yarn
-COPY --from=packages --chown=node:node /app/.yarnrc.yml  ./
 
 RUN --mount=type=cache,target=/home/node/.cache/yarn,sharing=locked,uid=1000,gid=1000 \
     yarn install --immutable
@@ -70,7 +69,9 @@ WORKDIR /app
 # Copy the install dependencies from the build stage and context
 COPY --from=build --chown=node:node /app/.yarn ./.yarn
 COPY --from=build --chown=node:node /app/.yarnrc.yml  ./
+COPY --from=build --chown=node:node /app/backstage.json ./
 COPY --from=build --chown=node:node /app/yarn.lock /app/package.json /app/packages/backend/dist/skeleton/ ./
+
 # Note: The skeleton bundle only includes package.json files -- if your app has
 # plugins that define a `bin` export, the bin files need to be copied as well to
 # be linked in node_modules/.bin during yarn install.
@@ -91,6 +92,6 @@ COPY --chown=node:node examples ./examples
 ENV NODE_ENV=production
 
 # This disables node snapshot for Node 20 to work with the Scaffolder
-ENV NODE_OPTIONS "--no-node-snapshot"
+ENV NODE_OPTIONS="--no-node-snapshot"
 
 CMD ["node", "packages/backend", "--config", "app-config.yaml", "--config", "app-config.production.yaml"]

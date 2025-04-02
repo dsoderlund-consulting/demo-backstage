@@ -1,4 +1,4 @@
-$newversion = '0.2.1'
+$newversion = '0.2.2'
 $repo = 'docker.io/dsoderlund/demo-backstage'
 $image = "{0}:{1}" -f $repo, $newversion
 echo $image

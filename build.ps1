@@ -10,6 +10,8 @@ podman login -u dsoderlund docker.io -p $pat
 podman build -t $image .
 podman push $image
 
+# if I wasn't using argocd image updater I would switch to this repo and commit the new version number to the version file of the app
+<#
 push-location ../talos/gitops/apps/rh-appset/mgmt/default/demo/backstage
 $f = "./version.yaml"
 if(test-path($f))
@@ -22,6 +24,7 @@ if(test-path($f))
     git push
 }
 pop-location
+#>
 
 argocd login argocd.mgmt.dsoderlund.consulting --sso --grpc-web --name mgmt
 argocd app sync backstage

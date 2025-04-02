@@ -16,9 +16,11 @@ const customGroupTransformer: GroupTransformer = async (
   // groups,
 ) => {
   entity.metadata.links = group.attributes?.link.map((l: string) => {
-    return {url: l}
-   }
-   );
+    return { url: l };
+  });
+  entity.metadata.annotations = {
+    'argocd/app-selector': `team=${group.name}`,
+  };
   return entity;
 };
 const customUserTransformer: UserTransformer = async (

@@ -43,7 +43,7 @@ integrations:
     #   apiBaseUrl: https://ghe.example.net/api/v3
     #   token: ${GHE_TOKEN}
 
-# proxy:
+proxy:
   ### Example for how to add a proxy endpoint for the frontend.
   ### A typical reason to do this is to handle HTTPS and CORS for internal services.
   # endpoints:
@@ -55,6 +55,16 @@ integrations:
 # Note: After experimenting with basic setup, use CI/CD to generate docs
 # and an external cloud storage when deploying TechDocs for production use-case.
 # https://backstage.io/docs/features/techdocs/how-to-guides#how-to-migrate-from-techdocs-basic-to-recommended-deployment-approach
+  '/argocd/api':
+    # url to the api of your hosted argoCD instance
+    target: https://argocd.mgmt.dsoderlund.consulting/api/v1/
+    changeOrigin: true
+    secure: true
+    headers:
+      Cookie:
+        $env: ARGOCD_AUTH_TOKEN
+argocd:
+  baseUrl: https://argocd.mgmt.dsoderlund.consulting
 techdocs:
   builder: 'local' # Alternatives - 'external'
   generator:
@@ -122,6 +132,10 @@ catalog:
       target: ../../ds-templates/all-templates.yaml
       rules:
         - allow: [Location, Template]
+    - type: file
+      target: ../../ds-ref-platform-catalog-item.local.yaml
+      rules:
+        - allow: [Location, System, Component]
 
 
 

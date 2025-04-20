@@ -65,3 +65,8 @@ integrations:
     - host: github.com
       apps:
         - $include: github-app-backstage-dsoderlund-credentials.yaml
+
+customFeatureToggle:
+  OrgKeycloak: true
+  AuthOAuth2: true
+  AuthGoogle: false

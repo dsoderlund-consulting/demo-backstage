@@ -13,9 +13,9 @@ import {
   SignInInfo,
 } from '@backstage/plugin-auth-node';
 
-export const oauth2istioAuth = createBackendModule({
+export const oauth2Auth = createBackendModule({
   pluginId: 'auth',
-  moduleId: 'oauth2istioAuth-provider',
+  moduleId: 'oauth2Auth-provider',
   register(reg) {
     reg.registerInit({
       deps: {

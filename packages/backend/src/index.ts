@@ -7,9 +7,38 @@
  */
 
 import { createBackend } from '@backstage/backend-defaults';
-import { oauth2istioAuth } from './oauth2istioAuth';
+import { oauth2Auth } from './oauth2Auth';
+import {
+  coreServices,
+  createBackendFeatureLoader,
+} from '@backstage/backend-plugin-api';
+
+const featureLoader = createBackendFeatureLoader({
+  deps: {
+    config: coreServices.rootConfig,
+  },
+  // The `*` in front of the function name makes it a generator function
+  *loader({ config }) {
+    // Example of a custom config flag to enable search
+    if (config.getOptionalBoolean('customFeatureToggle.OrgKeycloak')) {
+      yield import('@janus-idp/backstage-plugin-keycloak-backend/alpha');
+      yield import(
+        '@internal/backstage-plugin-keycloak-backend-module-transformer'
+      );
+    }
+    if (config.getOptionalBoolean('customFeatureToggle.AuthOAuth2')) {
+      yield oauth2Auth;
+    }
+    if (config.getOptionalBoolean('customFeatureToggle.AuthGoogle')) {
+      yield import('@backstage/plugin-auth-backend-module-google-provider');
+    }
+  },
+});
 
 const backend = createBackend();
+
+// feature toggled plugins
+backend.add(featureLoader);
 
 backend.add(import('@backstage/plugin-app-backend'));
 backend.add(import('@backstage/plugin-proxy-backend'));
@@ -17,17 +46,6 @@ backend.add(import('@backstage/plugin-techdocs-backend'));
 
 // auth plugin
 backend.add(import('@backstage/plugin-auth-backend'));
-// keycloak
-backend.add(import('@janus-idp/backstage-plugin-keycloak-backend/alpha'));
-backend.add(
-  import('@internal/backstage-plugin-keycloak-backend-module-transformer'),
-);
-
-// google auth for local
-backend.add(import('@backstage/plugin-auth-backend-module-google-provider'));
-
-// oauth2Proxy provider
-backend.add(oauth2istioAuth);
 
 // catalog plugin
 backend.add(import('@backstage/plugin-catalog-backend'));

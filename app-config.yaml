@@ -61,8 +61,7 @@ proxy:
     changeOrigin: true
     secure: true
     headers:
-      Cookie:
-        $env: ARGOCD_AUTH_TOKEN
+      Cookie: argocd.token=${ARGOCD_AUTH_TOKEN}
 argocd:
   baseUrl: https://argocd.mgmt.dsoderlund.consulting
 techdocs:

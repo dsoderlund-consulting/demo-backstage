@@ -7,3 +7,4 @@ spec:
   targets:
     - ./example-nodejs-template/template.yaml
     - ./mssql-cicd/template.yaml
+    - ./demo-fullstack-template/template.yaml

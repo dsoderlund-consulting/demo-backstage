@@ -1,0 +1,29 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.name | dump }}-frontend
+spec:
+  type: website
+  owner: group:dsoderlund.consulting
+  lifecycle: experimental
+  subcomponentOf: ${{ values.name | dump }}
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.name | dump }}-backend
+spec:
+  type: service
+  owner: group:dsoderlund.consulting
+  lifecycle: experimental
+  subcomponentOf: ${{ values.name | dump }}
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.name | dump }}
+spec:
+  type: service
+  owner: group:dsoderlund.consulting
+  lifecycle: experimental
+

@@ -3,7 +3,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: User
 metadata:
-  name: ds
+  name: ds-dsoderlund.consulting
 spec:
   memberOf: [dsoderlund.consulting]
   profile:

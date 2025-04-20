@@ -136,6 +136,10 @@ catalog:
       target: ../../ds-ref-platform-catalog-item.local.yaml
       rules:
         - allow: [Location, System, Component]
+    - type: file
+      target: ../../examples/org.yaml
+      rules:
+        - allow: [User, Group]
 
 
 

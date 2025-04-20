@@ -6,6 +6,10 @@ metadata:
   name: ds
 spec:
   memberOf: [dsoderlund.consulting]
+  profile:
+    displayName: "David Söderlund"
+    email: "ds@dsoderlund.consulting"
+    picture: "https://ca.slack-edge.com/T0JJASUQL-U08A0B202DD-7a32727254d9-192"
 ---
 # https://backstage.io/docs/features/software-catalog/descriptor-format#kind-group
 apiVersion: backstage.io/v1alpha1

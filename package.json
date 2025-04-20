@@ -6,9 +6,8 @@
     "node": "18 || 20"
   },
   "scripts": {
-    "dev": "yarn workspaces foreach -A --include backend --include app --parallel -v -i run start",
-    "start": "yarn workspace app start",
-    "start-backend": "yarn workspace backend start",
+    "dev": "yarn start",
+    "start": "backstage-cli repo start",
     "build:backend": "yarn workspace backend build",
     "build-image": "docker build -f Dockerfile --tag demo-backstage",
     "tsc": "tsc",
@@ -30,7 +29,7 @@
     ]
   },
   "devDependencies": {
-    "@backstage/cli": "^0.31.0",
+    "@backstage/cli": "^0.32.0",
     "@backstage/e2e-test-utils": "^0.1.1",
     "@playwright/test": "^1.32.3",
     "@spotify/prettier-config": "^12.0.0",

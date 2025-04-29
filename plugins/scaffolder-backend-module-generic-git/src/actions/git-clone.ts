@@ -1,54 +1,56 @@
-import { resolveSafeChildPath } from '@backstage/backend-plugin-api';
+import {
+  resolveSafeChildPath,
+  RootConfigService,
+} from '@backstage/backend-plugin-api';
 import {
   createTemplateAction,
   executeShellCommand,
 } from '@backstage/plugin-scaffolder-node';
-import fsPromises from 'fs/promises';
-import fs from 'fs';
 import { z } from 'zod';
 
-export const gitCloneAction = () => {
+export const gitCloneAction = (deps: { config: RootConfigService; }) => {
   return createTemplateAction({
     id: 'git:clone',
     description: 'Clones a git repository.',
     schema: {
       input: z.object({
-        repoUrl: z
+        repoUrl: z.string().describe('The repository to clone').nonempty(),
+        targetPath: z
           .string()
-          .describe('The repository to clone')
-          .nonempty()
-          .min(1),
-        args: z
+          .describe(
+            'Target path within the working directory to clone the repo into.',
+          )
+          .nonempty(),
+        additionalArguments: z
           .string()
           .array()
-          .describe('Arguments to pass to the command')
+          .describe('Additional arguments to pass to the git clone command')
           .optional(),
       }),
     },
 
     async handler(ctx) {
-      ctx.logger.info(`repoUrl: ${ctx.input.repoUrl}`);
+      ctx.logger.info(
+        `Cloning repoUrl: ${ctx.input.repoUrl} into ${ctx.workspacePath}/${ctx.input.targetPath}`,
+      );
+      let args = [
+        'clone',
+        ctx.input.repoUrl,
+        resolveSafeChildPath(ctx.workspacePath, ctx.input.targetPath),
+      ];
 
-      const splitRepoUrl = ctx.input.repoUrl.split('/');
-      const leafName = splitRepoUrl[splitRepoUrl.length - 1];
-
-      if (fs.existsSync(leafName)) {
-        ctx.logger.info(`Path ${leafName} exists in workspace, removing...`);
-        await fsPromises.rm(leafName, { recursive: true, force: true });
-      }
-
-      let args = ['clone', ctx.input.repoUrl];
       if (ctx.input.args && ctx.input.args.length) {
         args = [...args, ...ctx.input.args];
       }
+      ctx.logger.info(JSON.stringify(args));
       await executeShellCommand({
         command: 'git',
-        args,
+        args: args,
+        logger: ctx.logger,
         options: {
           cwd: ctx.workspacePath,
         },
       });
-
       ctx.logger.info(`Finished cloning ${ctx.input.repoUrl}`);
     },
   });

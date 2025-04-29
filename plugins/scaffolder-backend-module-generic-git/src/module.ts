@@ -17,9 +17,13 @@ export const scaffolderModule = createBackendModule({
       deps: {
         logger: coreServices.logger,
         scaffolderActions: scaffolderActionsExtensionPoint,
+        config: coreServices.rootConfig,
       },
-      async init({ scaffolderActions }) {
-        scaffolderActions.addActions(gitAction(), gitCloneAction());
+      async init({ scaffolderActions, config }) {
+        scaffolderActions.addActions(
+          gitAction(),
+          gitCloneAction({config: config}),
+        );
       },
     });
   },

@@ -1,6 +1,8 @@
 # [Backstage](https://backstage.io)
 
-This is your newly scaffolded Backstage App, Good Luck!
+Backstage demo from dsoderlund.consulting
+
+Requires: node 22, npm, yarn, docker.
 
 To start the app, run:
 

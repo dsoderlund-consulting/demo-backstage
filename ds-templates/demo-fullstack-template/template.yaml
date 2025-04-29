@@ -23,6 +23,16 @@ spec:
           ui:autofocus: true
           ui:options:
             rows: 5
+        ingress:
+          title: Ingress
+          type: boolean
+          description: Should the services have ingress?
+          ui:autofocus: false
+        database:
+          title: One Database please!
+          type: boolean
+          description: would you like a postgres database with your order?
+
     - title: Choose a location
       required:
         - repoUrl
@@ -47,14 +57,27 @@ spec:
       action: fetch:template
       input:
         url: ./content
+        targetPath: ./app
         values:
           name: ${{ parameters.name }}
-
+          ingress: ${{ parameters.ingress }}
+          database: ${{ parameters.database }}
+    - id: fetch-base-gitops
+      name: Fetch Base gitops
+      action: fetch:template
+      input:
+        url: ./gitops
+        targetPath: ./gitops
+        values:
+          name: ${{ parameters.name }}
+          ingress: ${{ parameters.ingress }}
+          database: ${{ parameters.database }}
     # This step publishes the contents of the working directory to GitHub.
     - id: publish
       name: Publish
       action: publish:github
       input:
+        sourcePath: ./app
         allowedHosts: ['github.com']
         description: This is ${{ parameters.name }}
         repoUrl: ${{ parameters.repoUrl }}

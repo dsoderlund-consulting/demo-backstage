@@ -1,7 +1,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: ${{ values.name | dump }}-frontend
+  name: "${{ values.name }}-frontend"
 spec:
   type: website
   owner: group:dsoderlund.consulting
@@ -11,7 +11,7 @@ spec:
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: ${{ values.name | dump }}-backend
+  name: "${{ values.name }}-backend"
 spec:
   type: service
   owner: group:dsoderlund.consulting

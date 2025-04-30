@@ -62,8 +62,8 @@ spec:
           name: ${{ parameters.name }}
           ingress: ${{ parameters.ingress }}
           database: ${{ parameters.database }}
-    - id: fetch-base-gitops
-      name: Fetch Base gitops
+    - id: fetch-gitops
+      name: Fetch gitops
       action: fetch:template
       input:
         url: ./gitops
@@ -74,13 +74,16 @@ spec:
           database: ${{ parameters.database }}
     # This step publishes the contents of the working directory to GitHub.
     - id: publish
-      name: Publish
+      name: Publish new repo
       action: publish:github
       input:
         sourcePath: ./app
         allowedHosts: ['github.com']
         description: This is ${{ parameters.name }}
         repoUrl: ${{ parameters.repoUrl }}
+        gitAuthorName: ${{ user.entity.metadata.name }}
+        gitAuthorEmail: ${{ user.entity.spec.profile.email }}
+    
 
     # The final step is to register our new component in the catalog.
     - id: register

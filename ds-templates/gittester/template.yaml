@@ -1,0 +1,37 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-template
+kind: Template
+metadata:
+  name: gittester-template
+  title: tester
+  description: test
+spec:
+  owner: group:dsoderlund.consulting
+  type: service
+
+  # These parameters are used to generate the input form in the frontend, and are
+  # used to gather input data for the execution of the template.
+  parameters:
+    - title: Fill in some steps
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          description: Unique name of the component
+          ui:autofocus: true
+          
+  steps:
+    - id: gitops-clone
+      name: Clone Gitops Repo
+      action: git:clone
+      input:
+        url: ssh://nas.office.dsoderlund.consulting/volume1/homes/ds/repos/test.git
+        
+
+  output:
+    text:
+      - title: debug information
+        content: |
+          ** Number of files: `${{ steps['gitops-clone'].output.files }}`

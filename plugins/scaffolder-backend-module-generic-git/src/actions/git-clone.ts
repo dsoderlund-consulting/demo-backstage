@@ -1,30 +1,24 @@
-import {
-  resolveSafeChildPath,
-  RootConfigService,
-} from '@backstage/backend-plugin-api';
-import {
-  createTemplateAction,
-  executeShellCommand,
-} from '@backstage/plugin-scaffolder-node';
+import { resolveSafeChildPath } from '@backstage/backend-plugin-api';
+import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import { z } from 'zod';
+import { Clone, CloneOptions } from 'nodegit';
+import { readdir } from 'fs-extra';
+import { Config } from '@backstage/config';
 
-export const gitCloneAction = (deps: { config: RootConfigService; }) => {
+export const gitCloneAction = (options: { config: Config }) => {
   return createTemplateAction({
     id: 'git:clone',
-    description: 'Clones a git repository.',
+    description: 'Clones a generic git repository with ssh auth.',
     schema: {
       input: z.object({
-        repoUrl: z.string().describe('The repository to clone').nonempty(),
+        // Todo: this should be replaced with named repositories from the backstage configuration
+        // The configuration will contain name, repoUrl, ssh private key to auth to git, gpg key for signing commits, and default clone options
+        repo: z.string().describe('The repository to clone').nonempty(),
         targetPath: z
           .string()
           .describe(
             'Target path within the working directory to clone the repo into.',
           )
-          .nonempty(),
-        additionalArguments: z
-          .string()
-          .array()
-          .describe('Additional arguments to pass to the git clone command')
           .optional(),
       }),
     },
@@ -33,24 +27,23 @@ export const gitCloneAction = (deps: { config: RootConfigService; }) => {
       ctx.logger.info(
         `Cloning repoUrl: ${ctx.input.repoUrl} into ${ctx.workspacePath}/${ctx.input.targetPath}`,
       );
-      let args = [
-        'clone',
-        ctx.input.repoUrl,
-        resolveSafeChildPath(ctx.workspacePath, ctx.input.targetPath),
-      ];
+      // It checks that the ctx.input.repo exists in the configuration.
+      config;
+      const cloneDir = resolveSafeChildPath(
+        ctx.workspacePath,
+        ctx.input.targetPath,
+      );
+      const cloneOptions: CloneOptions = {};
+      Clone(ctx.input.repoUrl, cloneDir, cloneOptions)
+        .then(repo => {
+          ctx.logger.info(`Cloned ${repo.path()} into ${repo.workdir()}`);
+        })
+        .catch(err => {
+          ctx.logger.error(err);
+        });
+      const numFiles = (await readdir(cloneDir)).length;
+      ctx.logger.info(`Cloned ${numFiles} files`);
 
-      if (ctx.input.args && ctx.input.args.length) {
-        args = [...args, ...ctx.input.args];
-      }
-      ctx.logger.info(JSON.stringify(args));
-      await executeShellCommand({
-        command: 'git',
-        args: args,
-        logger: ctx.logger,
-        options: {
-          cwd: ctx.workspacePath,
-        },
-      });
       ctx.logger.info(`Finished cloning ${ctx.input.repoUrl}`);
     },
   });

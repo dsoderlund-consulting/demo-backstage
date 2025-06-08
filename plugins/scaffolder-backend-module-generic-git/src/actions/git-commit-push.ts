@@ -56,10 +56,12 @@ export const gitCommitPushAction = (options: { config: Config }) => {
         'scaffolder action';
       const repoPath = ctx.input.repoPath;
       const remoteName = 'origin';
-      const branchName = ctx.input.branch ?? 'main';
-
+      
       const repoDir = resolveSafeChildPath(ctx.workspacePath, repoPath);
       const repo = await Nodegit.Repository.open(repoDir);
+      const branchName = ctx.input.branch ?? 'main';
+      const branch = await repo.getBranch(branchName);
+      const branchRef = branch.toString();
       // #region Add + Commit
       const index = await repo.refreshIndex();
       await index.addAll();
@@ -70,7 +72,7 @@ export const gitCommitPushAction = (options: { config: Config }) => {
       const author = Nodegit.Signature.now(authorName, authorEmail);
       const committer = Nodegit.Signature.now(authorName, authorEmail);
       const commitId = await repo.createCommit(
-        'HEAD',
+        branchRef,
         author,
         committer,
         commitMessage,
@@ -85,12 +87,12 @@ export const gitCommitPushAction = (options: { config: Config }) => {
         const firstCommit = await Nodegit.Commit.lookup(repo, commitId);
         try {
           const signedCommitId = await firstCommit.amendWithSignature(
+            branchRef,
             null,
             null,
             null,
             null,
-            null,
-            null,
+            oid,
             async (dataToSign: string) => {
               try {
                 const signature = await signCommitData(

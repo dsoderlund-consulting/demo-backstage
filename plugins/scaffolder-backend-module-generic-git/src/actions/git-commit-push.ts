@@ -3,7 +3,6 @@ import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import { z } from 'zod';
 import Nodegit from 'nodegit';
 import type { Remote } from 'nodegit';
-import * as fs from 'node:fs';
 import { Config } from '@backstage/config';
 import getAuthCallbacks from '../authCallbacks';
 import signCommitData from '../signWithKey';
@@ -56,7 +55,7 @@ export const gitCommitPushAction = (options: { config: Config }) => {
         'scaffolder action';
       const repoPath = ctx.input.repoPath;
       const remoteName = 'origin';
-      
+
       const repoDir = resolveSafeChildPath(ctx.workspacePath, repoPath);
       const repo = await Nodegit.Repository.open(repoDir);
       const branchName = ctx.input.branch ?? 'main';
@@ -88,30 +87,23 @@ export const gitCommitPushAction = (options: { config: Config }) => {
         try {
           const signedCommitId = await firstCommit.amendWithSignature(
             branchRef,
-            null,
-            null,
-            null,
-            null,
+            firstCommit.author(),
+            firstCommit.committer(),
+            firstCommit.messageEncoding(),
+            firstCommit.message(),
             oid,
             async (dataToSign: string) => {
-              try {
-                const signature = await signCommitData(
-                  dataToSign,
-                  gpgKey,
-                  gpgPassphrase, // Pass the passphrase
-                );
-                ctx.logger.debug(`Signature: ${signature}`);
-                return {
-                  code: 0, // Nodegit.Error.CODE.OK
-                  field: 'gpgsig',
-                  signedData: signature,
-                };
-              } catch (signError: any) {
-                ctx.logger.error(
-                  `Failed to sign commit data: ${signError.message}`,
-                );
-                return { code: -1, field: 'gpgsig' }; // Signal user callback failure
-              }
+              const signature = await signCommitData(
+                dataToSign,
+                gpgKey,
+                gpgPassphrase, // Pass the passphrase
+              );
+              ctx.logger.debug(`Signature: ${signature}`);
+              return {
+                code: 0, // Nodegit.Error.CODE.OK
+                field: 'gpgsig',
+                signedData: signature,
+              };
             },
           );
           ctx.logger.info(`Successfully signed commit: ${signedCommitId}`);

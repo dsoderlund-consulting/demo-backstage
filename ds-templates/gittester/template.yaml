@@ -3,8 +3,8 @@ apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
   name: gittester-template
-  title: tester
-  description: test
+  title: gittester
+  description: git tester
 spec:
   owner: group:dsoderlund.consulting
   type: service

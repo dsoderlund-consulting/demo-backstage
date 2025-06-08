@@ -1,7 +1,7 @@
 import { resolveSafeChildPath } from '@backstage/backend-plugin-api';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import { z } from 'zod';
-import { Clone, CloneOptions } from 'nodegit';
+import { Clone, CloneOptions, Cred } from 'nodegit';
 import { readdir } from 'fs-extra';
 import { Config } from '@backstage/config';
 
@@ -21,20 +21,41 @@ export const gitCloneAction = (options: { config: Config }) => {
           )
           .optional(),
       }),
+      output: z.object({
+        files: z.number().describe('Number of files cloned'),
+      }),
     },
 
     async handler(ctx) {
-      ctx.logger.info(
-        `Cloning repoUrl: ${ctx.input.repoUrl} into ${ctx.workspacePath}/${ctx.input.targetPath}`,
-      );
       // It checks that the ctx.input.repo exists in the configuration.
-      config;
-      const cloneDir = resolveSafeChildPath(
-        ctx.workspacePath,
-        ctx.input.targetPath,
+      const repoConfig = options.config.getConfig(
+        `genericGit.${ctx.input.repo}`,
       );
-      const cloneOptions: CloneOptions = {};
-      Clone(ctx.input.repoUrl, cloneDir, cloneOptions)
+      const repoUrl = repoConfig.getString('repoUrl');
+      const privatekey = repoConfig.getString('privatekey');
+      const publickey = repoConfig.getString('publickey');
+      const username = repoConfig.getString('username');
+      const passphrase = repoConfig.getString('passphrase');
+
+      const targetPath = ctx.input.targetPath ?? ctx.input.repo;
+
+      ctx.logger.info(
+        `Cloning repoUrl: ${repoUrl} into ${ctx.workspacePath}/${targetPath}`,
+      );
+
+      const cloneDir = resolveSafeChildPath(ctx.workspacePath, targetPath);
+      const cred = Cred.sshKeyNew(username, publickey, privatekey, passphrase);
+
+      const cloneOptions: CloneOptions = {
+        fetchOpts: {
+          remoteCallbacks: {
+            credentials: () => {
+              return cred;
+            },
+          },
+        },
+      };
+      Clone(repoUrl, cloneDir, cloneOptions)
         .then(repo => {
           ctx.logger.info(`Cloned ${repo.path()} into ${repo.workdir()}`);
         })
@@ -42,9 +63,10 @@ export const gitCloneAction = (options: { config: Config }) => {
           ctx.logger.error(err);
         });
       const numFiles = (await readdir(cloneDir)).length;
+      ctx.output('files', numFiles);
       ctx.logger.info(`Cloned ${numFiles} files`);
 
-      ctx.logger.info(`Finished cloning ${ctx.input.repoUrl}`);
+      ctx.logger.info(`Finished cloning ${repoUrl}`);
     },
   });
 };

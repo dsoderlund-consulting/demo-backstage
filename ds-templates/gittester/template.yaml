@@ -12,7 +12,7 @@ spec:
   # These parameters are used to generate the input form in the frontend, and are
   # used to gather input data for the execution of the template.
   parameters:
-    - title: Fill in some steps
+    - title: Repo configuration
       required:
         - repoName
         - repoConfiguration
@@ -30,9 +30,34 @@ spec:
         fetchDepth:
           title: Fetch Depth
           type: number
-          description: The number of commits to fetch, default is all commits (0)
-          default: 0
-
+          description: The number of commits to fetch, a depth of 0 is all commits
+          default: 1
+    - title: Values
+      required:
+        - name
+        - othervalue
+        - thirdvalue
+        - fourthvalue
+      properties:
+        name:
+          title: Name
+          type: string
+          description: Unique name of the component
+          ui:autofocus: true
+          ui:options:
+            rows: 5
+        othervalue:
+          title: Other Value
+          type: string
+          description: Other Value
+        thirdvalue:
+          title: Third Value
+          type: string
+          description: Third Value
+        fourthvalue:
+          title: Fourth Value
+          type: string
+          description: Fourth Value
   steps:
     - id: gitops-clone
       name: Clone Gitops Repo
@@ -41,6 +66,25 @@ spec:
         repoName: ${{ parameters.repoName }}
         repoConfiguration: ${{ parameters.repoConfiguration }}
         depth: ${{ parameters.fetchDepth }}
+    - id: render-template
+      name: Render Template
+      action: fetch:template
+      input:
+        url: ./content
+        targetPath: ./testerdirectory
+        values:
+          name: ${{ parameters.name }}
+          othervalue: ${{ parameters.othervalue }}
+          thirdvalue: ${{ parameters.thirdvalue }}
+          fourthvalue: ${{ parameters.fourthvalue }}
+    # - id: gitops-commit-push
+    #   name: Commit and Push to Gitops Repo
+    #   action: git:commit-push
+    #   input:
+    #     repoName: ${{ parameters.repoName }}
+    #     repoConfiguration: ${{ parameters.repoConfiguration }}
+    #     message: "feat: add new service"
+
 
   output:
     text:

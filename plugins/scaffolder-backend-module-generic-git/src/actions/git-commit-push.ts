@@ -1,22 +1,26 @@
+import { resolveSafeChildPath } from '@backstage/backend-plugin-api';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import { z } from 'zod';
 import Nodegit from 'nodegit';
-import type { PushOptions } from 'nodegit';
+import type { Remote } from 'nodegit';
 import * as fs from 'node:fs';
 import { Config } from '@backstage/config';
-import { sign } from 'node:crypto';
+import getAuthCallbacks from '../authCallbacks';
+import signCommitData from '../signWithKey';
 
 export const gitCommitPushAction = (options: { config: Config }) => {
   return createTemplateAction({
-    id: 'git-commit-push',
+    id: 'git:commit-push',
     description:
       'Commits changes and pushes that commit to a branch in an existing git repo',
     schema: {
       input: z.object({
         repoConfiguration: z.string(),
-        commitMessage: z.string(),
+        commitMessage: z.string().optional().default('scaffolder action'),
+        authorName: z.string().optional(),
+        authorEmail: z.string().optional(),
         repoPath: z.string(),
-        branch: z.string(),
+        branch: z.string().optional().default('main'),
         signCommit: z.boolean().optional().default(false),
       }),
       output: z.object({
@@ -24,20 +28,38 @@ export const gitCommitPushAction = (options: { config: Config }) => {
       }),
     },
     async handler(ctx) {
+      ctx.logger.debug(JSON.stringify(ctx.input));
       const repoConfigName = ctx.input.repoConfiguration;
       const gitConfig = options.config.getConfig(
         `genericGit.${repoConfigName}`,
       );
+      const scaffolderDefaultConfig = options.config.getConfig('scaffolder');
       const privatekey = gitConfig.getString('privatekey');
       const publickey = gitConfig.getString('publickey');
       const username = gitConfig.getString('username');
       const passphrase = gitConfig.getOptionalString('passphrase') ?? '';
-      const gpgKey = ctx.input.signCommit ? gitConfig.getString('gpgKey') : '';
+      const gpgKey = ctx.input.signCommit
+        ? gitConfig.getString('gpgKey')
+        : undefined;
+      const gpgPassphrase = gitConfig.getOptionalString('gpgPassphrase');
+      const authorName =
+        ctx.input.authorName ??
+        scaffolderDefaultConfig.getOptionalString('defaultAuthor.name') ??
+        'Backstage scaffolder';
+      const authorEmail =
+        ctx.input.authorEmail ??
+        scaffolderDefaultConfig.getOptionalString('defaultAuthor.email') ??
+        '';
+      const commitMessage =
+        ctx.input.commitMessage ??
+        scaffolderDefaultConfig.getOptionalString('defaultCommitMessage') ??
+        'scaffolder action';
       const repoPath = ctx.input.repoPath;
-      const commitMessage = ctx.input.commitMessage;
-      const branchName = ctx.input.branch;
+      const remoteName = 'origin';
+      const branchName = ctx.input.branch ?? 'main';
 
-      const repo = await Nodegit.Repository.open(repoPath);
+      const repoDir = resolveSafeChildPath(ctx.workspacePath, repoPath);
+      const repo = await Nodegit.Repository.open(repoDir);
       // #region Add + Commit
       const index = await repo.refreshIndex();
       await index.addAll();
@@ -45,15 +67,9 @@ export const gitCommitPushAction = (options: { config: Config }) => {
       const oid = await index.writeTree();
 
       const parent = await repo.getHeadCommit();
-      const author = Nodegit.Signature.now(
-        'David Söderlund',
-        'ds@dsoderlund.consulting',
-      );
-      const committer = Nodegit.Signature.now(
-        'David Quadman Söderlund',
-        'quadmanswe@gmail.com',
-      );
-      const commit = await repo.createCommit(
+      const author = Nodegit.Signature.now(authorName, authorEmail);
+      const committer = Nodegit.Signature.now(authorName, authorEmail);
+      const commitId = await repo.createCommit(
         'HEAD',
         author,
         committer,
@@ -61,36 +77,67 @@ export const gitCommitPushAction = (options: { config: Config }) => {
         oid,
         [parent],
       );
+      ctx.logger.info(`New Commit: ${commitId}`);
+      if (
+        gpgKey
+        // && gpgPassphrase
+      ) {
+        const firstCommit = await Nodegit.Commit.lookup(repo, commitId);
+        const signedCommitId = await firstCommit
+          .amendWithSignature(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            dataToSign => {
+              return {
+                code: 0,
+                field: 'gpgsig',
+                signedData: signCommitData(dataToSign, gpgKey),
+              };
+            },
+          )
+          .catch(err => {
+            ctx.logger.error(err);
+          });
+        ctx.logger.info(`Signed commit: ${signedCommitId}`);
+      }
+
       // #endregion
       // #region Push
-      const pushOptions: PushOptions = {
-        callbacks: {
-          credentials: () => {
-            return Nodegit.Credential.sshKeyMemoryNew(
-              username,
-              publickey,
-              privatekey,
-              passphrase,
-            );
-          },
-        },
-      };
-      
-      let remote;
-      repo
-        .getRemote('origin')
+      const authCallbacks = getAuthCallbacks(
+        username,
+        publickey,
+        privatekey,
+        passphrase,
+      );
+
+      let remote: Remote;
+      await repo
+        .getRemote(remoteName)
         .then(_remote => {
+          ctx.logger.debug(`Resolving ref to ${branchName}`);
           remote = _remote;
           return repo.getBranch(branchName);
         })
         .then(ref => {
-          return remote.push([ref.toString()], pushOptions);
+          const _ref = ref.toString();
+          ctx.logger.debug(`Pushing ref ${_ref}:${_ref} to ${remote.name()}`);
+          ctx.logger.debug(
+            `PushRefs: ${JSON.stringify(remote.getPushRefspecs())}`,
+          );
+          ctx.logger.debug(`connected: ${remote.connected()}`);
+          return remote.push([`${_ref}:${_ref}`], {
+            callbacks: authCallbacks,
+          });
         })
         .then(() => {
           ctx.logger.info(`Pushed to ${branchName}`);
           ctx.output('success', true);
         })
-        .catch(err => {
+        .catch((err: Error) => {
           ctx.logger.error(err);
           ctx.output('success', false);
         });

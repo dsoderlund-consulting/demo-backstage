@@ -32,6 +32,11 @@ spec:
           type: number
           description: The number of commits to fetch, a depth of 0 is all commits
           default: 1
+        signCommit: 
+          title: Sign git commits
+          type: boolean
+          description: If true, all git commits will be signed if there is a gpg private signing key configured for the repo configuration
+          default: false
     - title: Values
       required:
         - name
@@ -71,19 +76,20 @@ spec:
       action: fetch:template
       input:
         url: ./content
-        targetPath: ./testerdirectory
+        targetPath: ${{ parameters.repoName }}/testerdirectory
         values:
           name: ${{ parameters.name }}
           othervalue: ${{ parameters.othervalue }}
           thirdvalue: ${{ parameters.thirdvalue }}
           fourthvalue: ${{ parameters.fourthvalue }}
-    # - id: gitops-commit-push
-    #   name: Commit and Push to Gitops Repo
-    #   action: git:commit-push
-    #   input:
-    #     repoName: ${{ parameters.repoName }}
-    #     repoConfiguration: ${{ parameters.repoConfiguration }}
-    #     message: "feat: add new service"
+    - id: gitops-commit-push
+      name: Commit and Push to Gitops Repo
+      action: git:commit-push
+      input:
+        repoPath: ${{ parameters.repoName }}
+        repoConfiguration: ${{ parameters.repoConfiguration }}
+        commitMessage: "feat: add new service"
+        signCommit: ${{ parameters.signCommit }}
 
 
   output:

@@ -7049,6 +7049,7 @@ __metadata:
     "@types/nodegit": "npm:^0"
     fs-extra: "npm:^11.3.0"
     nodegit: "npm:^0.28.0-alpha.33"
+    openpgp: "npm:^6.1.1"
     zod: "npm:^3.24.3"
   languageName: unknown
   linkType: soft
@@ -25935,6 +25936,13 @@ __metadata:
     jose: "npm:^6.0.10"
     oauth4webapi: "npm:^3.5.1"
   checksum: 10c0/403a1b0d08b5f74d6f715f139ffede1f9a96ca22d59a34c09c8f154159c2e5acf3f396cabc1a7e5fcc93530fc86e6e6d08040df3f42edd3f248ef530445c8651
+  languageName: node
+  linkType: hard
+
+"openpgp@npm:^6.1.1":
+  version: 6.1.1
+  resolution: "openpgp@npm:6.1.1"
+  checksum: 10c0/dcd355e3aa826d631ad1f5eb39dd939be93ef8d2f3eb56c279662cfb08aaf28f9d5eff92b40c9de28adcbda454d43b0398bc175c0fe9131ccf003f5a20614101
   languageName: node
   linkType: hard
 

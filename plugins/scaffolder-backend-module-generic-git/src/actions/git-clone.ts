@@ -5,6 +5,7 @@ import Nodegit from 'nodegit';
 import type { CloneOptions } from 'nodegit';
 import * as fs from 'node:fs';
 import { Config } from '@backstage/config';
+import getAuthCallbacks from '../authCallbacks';
 
 export const gitCloneAction = (options: { config: Config }) => {
   return createTemplateAction({
@@ -112,55 +113,61 @@ export const gitCloneAction = (options: { config: Config }) => {
       const repoName = ctx.input.repoName;
       const repoUrl = `${repoBaseUrl}/${repoName}.git`;
       const targetPath = ctx.input.targetPath ?? repoName;
+      const branchName = ctx.input.branch ?? 'main';
 
-      const cloneDir = resolveSafeChildPath(ctx.workspacePath, targetPath);
+      const repoDir = resolveSafeChildPath(ctx.workspacePath, targetPath);
+      const authCallbacks = getAuthCallbacks(
+        username,
+        publickey,
+        privatekey,
+        passphrase,
+      );
 
       const cloneOptions: CloneOptions = {
         fetchOpts: {
-          callbacks: {
-            credentials: () => {
-              return Nodegit.Credential.sshKeyMemoryNew(
-                username,
-                publickey,
-                privatekey,
-                passphrase,
-              );
-            },
-          },
+          callbacks: authCallbacks,
+          depth: ctx.input.fetchDepth ?? 0,
         },
+        checkoutBranch: branchName,
       };
 
-      if (ctx.input.branch) {
-        cloneOptions.checkoutBranch = ctx.input.branch;
-      }
-      if (ctx.input.depth) {
-        cloneOptions.fetchOpts!.depth = ctx.input.depth;
-      }
-    
-      if (fs.existsSync(cloneDir)) {
-        fs.rmSync(cloneDir, { recursive: true, force: true });
+      if (fs.existsSync(repoDir)) {
+        fs.rmSync(repoDir, { recursive: true, force: true });
       }
       ctx.logger.info(
         `Cloning repoUrl: ${repoUrl} into ${ctx.workspacePath}/${targetPath}`,
       );
 
-      fs.mkdirSync(cloneDir, { recursive: false });
-
-      await Nodegit.Clone(repoUrl, cloneDir, cloneOptions)
-        .then(repo => {
-          ctx.logger.info(`Cloned ${repo.path()} into ${repo.workdir()}`);
+      fs.mkdirSync(repoDir, { recursive: false });
+      let repo: Nodegit.Repository;
+      await Nodegit.Clone(repoUrl, repoDir, cloneOptions)
+        .then(_repo => {
+          repo = _repo;
+          ctx.logger.debug(`Cloned ${repo.path()} into ${repo.workdir()}`);
+          return repo.getBranch(branchName);
+        })
+        .then(_ref => {
           return repo.getHeadCommit();
         })
         .then(commit => {
-          ctx.logger.info(`Latest commit message: ${commit.message()}`);
+          ctx.logger.debug(`Latest commit message: ${commit.message()}`);
+        })
+        .then(() => {
+          ctx.logger.debug(`Finished cloning ${repoUrl}`);
+        })
+        .then(() => {
+          return repo.getRemote('origin');
+        })
+        .then(remote => {
+          ctx.logger.debug(`connected: ${remote.connected()}`);
         })
         .catch(err => {
           ctx.logger.error(`git-clone.ts: ${err}`);
           throw new Error(err);
         });
-      const numFiles = fs.readdirSync(cloneDir).length;
+      const numFiles = fs.readdirSync(repoDir).length;
       ctx.output('files', numFiles);
-      ctx.logger.info(`Contains ${numFiles} files`);
+      ctx.logger.debug(`Contains ${numFiles} files`);
       ctx.logger.info(`Finished cloning ${repoUrl}`);
     },
   });

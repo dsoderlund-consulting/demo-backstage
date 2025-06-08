@@ -12,7 +12,6 @@ export const gitCloneAction = (options: { config: Config }) => {
     description: 'Clones a generic git repository with ssh auth.',
     schema: {
       input: z.object({
-        // Todo: this should be replaced with named repositories from the backstage configuration
         // The configuration will contain name, repoUrl, ssh private key to auth to git, gpg key for signing commits, and default clone options
         repoName: z
           .string()
@@ -28,6 +27,72 @@ export const gitCloneAction = (options: { config: Config }) => {
             'Target path within the working directory to clone the repo into.',
           )
           .optional(),
+        branch: z
+          .string()
+          .describe('The branch to checkout after cloning. Defaults to main.')
+          .default('main'),
+        depth: z
+          .number()
+          .describe('The depth of the clone. Defaults to 0 (full clone).')
+          .default(0),
+        submodules: z
+          .boolean()
+          .describe('Whether to clone submodules. Defaults to false.')
+          .default(false),
+        bare: z
+          .boolean()
+          .describe('Whether to create a bare repository. Defaults to false.')
+          .default(false),
+        checkout: z
+          .boolean()
+          .describe(
+            'Whether to checkout the branch after cloning. Defaults to true.',
+          )
+          .default(true),
+        fetchTags: z
+          .boolean()
+          .describe('Whether to fetch tags. Defaults to true.')
+          .default(true),
+        fetchPrune: z
+          .boolean()
+          .describe(
+            'Whether to prune remote tracking branches. Defaults to true.',
+          )
+          .default(true),
+        fetchDepth: z
+          .number()
+          .describe('The depth of the fetch. Defaults to 0 (full fetch).')
+          .default(0),
+        fetchSubmodules: z
+          .boolean()
+          .describe('Whether to fetch submodules. Defaults to false.')
+          .default(false),
+        fetchTagsOnly: z
+          .boolean()
+          .describe('Whether to fetch tags only. Defaults to false.')
+          .default(false),
+        fetchForce: z
+          .boolean()
+          .describe('Whether to force fetch. Defaults to false.')
+          .default(false),
+        fetchUpdateSubmodules: z
+          .boolean()
+          .describe(
+            'Whether to update submodules after fetching. Defaults to false.',
+          )
+          .default(false),
+        fetchUpdateSubmodulesRecurse: z
+          .boolean()
+          .describe(
+            'Whether to recursively update submodules after fetching. Defaults to false.',
+          )
+          .default(false),
+        fetchUpdateSubmodulesJobs: z
+          .number()
+          .describe(
+            'The number of jobs to use when updating submodules. Defaults to 0 (auto).',
+          )
+          .default(0),
       }),
       output: z.object({
         files: z.number().describe('Number of files cloned'),
@@ -64,6 +129,14 @@ export const gitCloneAction = (options: { config: Config }) => {
           },
         },
       };
+
+      if (ctx.input.branch) {
+        cloneOptions.checkoutBranch = ctx.input.branch;
+      }
+      if (ctx.input.depth) {
+        cloneOptions.fetchOpts!.depth = ctx.input.depth;
+      }
+    
       if (fs.existsSync(cloneDir)) {
         fs.rmSync(cloneDir, { recursive: true, force: true });
       }
@@ -79,15 +152,7 @@ export const gitCloneAction = (options: { config: Config }) => {
           return repo.getHeadCommit();
         })
         .then(commit => {
-          ctx.logger.info(`Commit message: ${commit.message()}`);
-          return commit.getEntry('test.txt');
-        })
-        .then(entry => {
-          return entry.getBlob();
-        })
-        .then(blob => {
-          ctx.logger.info(blob.toString());
-          return blob.toString();
+          ctx.logger.info(`Latest commit message: ${commit.message()}`);
         })
         .catch(err => {
           ctx.logger.error(`git-clone.ts: ${err}`);

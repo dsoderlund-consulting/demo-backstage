@@ -27,6 +27,11 @@ spec:
           type: string
           description: Repo Configuration
           default: nas
+        fetchDepth:
+          title: Fetch Depth
+          type: number
+          description: The number of commits to fetch, default is all commits (0)
+          default: 0
 
   steps:
     - id: gitops-clone
@@ -35,6 +40,7 @@ spec:
       input:
         repoName: ${{ parameters.repoName }}
         repoConfiguration: ${{ parameters.repoConfiguration }}
+        depth: ${{ parameters.fetchDepth }}
 
   output:
     text:

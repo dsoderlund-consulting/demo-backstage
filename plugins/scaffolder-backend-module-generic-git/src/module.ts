@@ -3,7 +3,7 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import { scaffolderActionsExtensionPoint } from '@backstage/plugin-scaffolder-node/alpha';
-import { gitCloneAction } from './actions';
+import { gitCloneAction, gitCommitPushAction } from './actions';
 
 /**
  * A backend module that registers the action into the scaffolder
@@ -20,7 +20,8 @@ export const scaffolderModule = createBackendModule({
       },
       async init({ scaffolderActions, config }) {
         scaffolderActions.addActions(
-          gitCloneAction({config: config}),
+          gitCloneAction({ config: config }),
+          gitCommitPushAction({ config: config }),
         );
       },
     });

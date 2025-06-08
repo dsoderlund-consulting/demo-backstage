@@ -73,7 +73,7 @@ export const gitCloneAction = (options: { config: Config }) => {
 
       fs.mkdirSync(cloneDir, { recursive: false });
 
-      Nodegit.Clone(repoUrl, cloneDir, cloneOptions)
+      await Nodegit.Clone(repoUrl, cloneDir, cloneOptions)
         .then(repo => {
           ctx.logger.info(`Cloned ${repo.path()} into ${repo.workdir()}`);
           return repo.getHeadCommit();

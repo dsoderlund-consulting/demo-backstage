@@ -14,21 +14,27 @@ spec:
   parameters:
     - title: Fill in some steps
       required:
-        - repoUrl
+        - repoName
+        - repoConfiguration
       properties:
-        repoUrl:
-          title: Repository Location
+        repoName:
+          title: repoName
           type: string
-          description: Unique name of the component
+          description: Repo Name
           ui:autofocus: true
-          
+        repoConfiguration:
+          title: repoConfiguration
+          type: string
+          description: Repo Configuration
+          default: nas
+
   steps:
     - id: gitops-clone
       name: Clone Gitops Repo
       action: git:clone
       input:
-        url: ssh://nas.office.dsoderlund.consulting/volume1/homes/ds/repos/test.git
-        
+        repoName: ${{ parameters.repoName }}
+        repoConfiguration: ${{ parameters.repoConfiguration }}
 
   output:
     text:

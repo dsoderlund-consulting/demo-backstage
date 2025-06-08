@@ -1,8 +1,9 @@
 import { resolveSafeChildPath } from '@backstage/backend-plugin-api';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import { z } from 'zod';
-import { Clone, CloneOptions, Cred } from 'nodegit';
+import { Clone, CloneOptions, Credential } from 'nodegit';
 import { readdir } from 'fs-extra';
+import { writeFile, mkdir } from 'fs';
 import { Config } from '@backstage/config';
 
 export const gitCloneAction = (options: { config: Config }) => {
@@ -13,7 +14,14 @@ export const gitCloneAction = (options: { config: Config }) => {
       input: z.object({
         // Todo: this should be replaced with named repositories from the backstage configuration
         // The configuration will contain name, repoUrl, ssh private key to auth to git, gpg key for signing commits, and default clone options
-        repo: z.string().describe('The repository to clone').nonempty(),
+        repoName: z
+          .string()
+          .describe('The name of the repository to clone')
+          .nonempty(),
+        repoConfiguration: z
+          .string()
+          .describe('The configuration with the repo connection details')
+          .nonempty(),
         targetPath: z
           .string()
           .describe(
@@ -27,29 +35,52 @@ export const gitCloneAction = (options: { config: Config }) => {
     },
 
     async handler(ctx) {
-      // It checks that the ctx.input.repo exists in the configuration.
-      const repoConfig = options.config.getConfig(
-        `genericGit.${ctx.input.repo}`,
+      const repoConfigName = ctx.input.repoConfiguration;
+      const gitConfig = options.config.getConfig(
+        `genericGit.${repoConfigName}`,
       );
-      const repoUrl = repoConfig.getString('repoUrl');
-      const privatekey = repoConfig.getString('privatekey');
-      const publickey = repoConfig.getString('publickey');
-      const username = repoConfig.getString('username');
-      const passphrase = repoConfig.getString('passphrase');
-
-      const targetPath = ctx.input.targetPath ?? ctx.input.repo;
+      const repoBaseUrl = gitConfig.getString('reposBaseUrl');
+      const privatekey = gitConfig.getString('privatekey');
+      const publickey = gitConfig.getString('publickey');
+      const username = gitConfig.getString('username');
+      const passphrase = gitConfig.getOptionalString('passphrase') ?? '';
+      const repoName = ctx.input.repoName;
+      const repoUrl = `${repoBaseUrl}/${repoName}.git`;
+      const targetPath = ctx.input.targetPath ?? repoName;
 
       ctx.logger.info(
         `Cloning repoUrl: ${repoUrl} into ${ctx.workspacePath}/${targetPath}`,
       );
 
+      // Write values to files for sshKeyNew to read
+      // const keyDir = resolveSafeChildPath(ctx.workspacePath, '.ssh');
+      // mkdir(keyDir, { recursive: true }, err => ctx.logger.error(err));
+      // writeFile(`${keyDir}/${repoConfigName}.cer`, publickey, err => {
+      //   ctx.logger.error(err);
+      // });
+      // writeFile(`${keyDir}/${repoConfigName}.key`, privatekey, err => {
+      //   ctx.logger.error(err);
+      // });
+
       const cloneDir = resolveSafeChildPath(ctx.workspacePath, targetPath);
-      const cred = Cred.sshKeyNew(username, publickey, privatekey, passphrase);
+      mkdir(cloneDir, { recursive: false }, _err => {});
+      const cred = await Credential.sshKeyMemoryNew(
+        username,
+        publickey,
+        privatekey,
+        passphrase,
+      );
+      // const cred2 = Cred.sshKeyNew(
+      //   username,
+      //   '../../backstage.pub',
+      //   '../../backstage',
+      //   passphrase,
+      // );
 
       const cloneOptions: CloneOptions = {
         fetchOpts: {
-          remoteCallbacks: {
-            credentials: () => {
+          callbacks: {
+            credentials: function (url: string, userName: string) {
               return cred;
             },
           },
@@ -60,7 +91,8 @@ export const gitCloneAction = (options: { config: Config }) => {
           ctx.logger.info(`Cloned ${repo.path()} into ${repo.workdir()}`);
         })
         .catch(err => {
-          ctx.logger.error(err);
+          ctx.logger.error(`git-clone.ts: ${err}`);
+          throw new Error(err);
         });
       const numFiles = (await readdir(cloneDir)).length;
       ctx.output('files', numFiles);

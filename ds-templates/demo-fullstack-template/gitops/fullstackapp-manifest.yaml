@@ -10,12 +10,16 @@ spec:
     databaseConnectionValues: true
     extraEnvironmentVariables:
       - name: ASPNETCORE_ENVIRONMENT
-        value: Production
+        value: "Production"
   frontend:
-    image: "images.mgmt.dsoderlund.consulting/${{ values.name }}-frontend:0.0.6"
+    image: "images.mgmt.dsoderlund.consulting/${{ values.name }}-frontend:0.0.1"
     replicas: 1
     containerPort: 80
+  {% if values.ingress %}
   ingress:
-    hostname: ${{ values.hostname | dump }}
+    hostname: "${{ values.name }}.sam.dsoderlund.consulting"
+  {% endif %}
+  {% if values.database %}
   database:
     replicas: 1
+  {% endif %}

@@ -84,4 +84,5 @@ backend.add(import('@backstage/plugin-scaffolder-backend/alpha'));
 backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
 
 // And there was backend
+backend.add(import('@internal/backstage-plugin-scaffolder-backend-module-generic-git'));
 backend.start();

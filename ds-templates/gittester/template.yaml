@@ -1,0 +1,99 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-template
+kind: Template
+metadata:
+  name: gittester-template
+  title: gittester
+  description: git tester
+spec:
+  owner: group:dsoderlund.consulting
+  type: service
+
+  # These parameters are used to generate the input form in the frontend, and are
+  # used to gather input data for the execution of the template.
+  parameters:
+    - title: Repo configuration
+      required:
+        - repoName
+        - repoConfiguration
+      properties:
+        repoName:
+          title: repoName
+          type: string
+          description: Repo Name
+          ui:autofocus: true
+        repoConfiguration:
+          title: repoConfiguration
+          type: string
+          description: Repo Configuration
+          default: nas
+        fetchDepth:
+          title: Fetch Depth
+          type: number
+          description: The number of commits to fetch, a depth of 0 is all commits
+          default: 1
+        signCommit: 
+          title: Sign git commits
+          type: boolean
+          description: If true, all git commits will be signed if there is a gpg private signing key configured for the repo configuration
+          default: false
+    - title: Values
+      required:
+        - name
+        - othervalue
+        - thirdvalue
+        - fourthvalue
+      properties:
+        name:
+          title: Name
+          type: string
+          description: Unique name of the component
+          ui:autofocus: true
+          ui:options:
+            rows: 5
+        othervalue:
+          title: Other Value
+          type: string
+          description: Other Value
+        thirdvalue:
+          title: Third Value
+          type: string
+          description: Third Value
+        fourthvalue:
+          title: Fourth Value
+          type: string
+          description: Fourth Value
+  steps:
+    - id: gitops-clone
+      name: Clone Gitops Repo
+      action: git:clone
+      input:
+        repoName: ${{ parameters.repoName }}
+        repoConfiguration: ${{ parameters.repoConfiguration }}
+        depth: ${{ parameters.fetchDepth }}
+    - id: render-template
+      name: Render Template
+      action: fetch:template
+      input:
+        url: ./content
+        targetPath: ${{ parameters.repoName }}/testerdirectory
+        values:
+          name: ${{ parameters.name }}
+          othervalue: ${{ parameters.othervalue }}
+          thirdvalue: ${{ parameters.thirdvalue }}
+          fourthvalue: ${{ parameters.fourthvalue }}
+    - id: gitops-commit-push
+      name: Commit and Push to Gitops Repo
+      action: git:commit-push
+      input:
+        repoPath: ${{ parameters.repoName }}
+        repoConfiguration: ${{ parameters.repoConfiguration }}
+        commitMessage: "feat: add new service"
+        signCommit: ${{ parameters.signCommit }}
+
+
+  output:
+    text:
+      - title: debug information
+        content: |
+          ** Number of files: `${{ steps['gitops-clone'].output.files }}`

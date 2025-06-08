@@ -1,9 +1,9 @@
 import { resolveSafeChildPath } from '@backstage/backend-plugin-api';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import { z } from 'zod';
-import { Clone, CloneOptions, Credential } from 'nodegit';
-import { readdir } from 'fs-extra';
-import { writeFile, mkdir } from 'fs';
+import Nodegit from 'nodegit';
+import type { CloneOptions } from 'nodegit';
+import * as fs from 'node:fs';
 import { Config } from '@backstage/config';
 
 export const gitCloneAction = (options: { config: Config }) => {
@@ -48,56 +48,54 @@ export const gitCloneAction = (options: { config: Config }) => {
       const repoUrl = `${repoBaseUrl}/${repoName}.git`;
       const targetPath = ctx.input.targetPath ?? repoName;
 
-      ctx.logger.info(
-        `Cloning repoUrl: ${repoUrl} into ${ctx.workspacePath}/${targetPath}`,
-      );
-
-      // Write values to files for sshKeyNew to read
-      // const keyDir = resolveSafeChildPath(ctx.workspacePath, '.ssh');
-      // mkdir(keyDir, { recursive: true }, err => ctx.logger.error(err));
-      // writeFile(`${keyDir}/${repoConfigName}.cer`, publickey, err => {
-      //   ctx.logger.error(err);
-      // });
-      // writeFile(`${keyDir}/${repoConfigName}.key`, privatekey, err => {
-      //   ctx.logger.error(err);
-      // });
-
       const cloneDir = resolveSafeChildPath(ctx.workspacePath, targetPath);
-      mkdir(cloneDir, { recursive: false }, _err => {});
-      const cred = await Credential.sshKeyMemoryNew(
-        username,
-        publickey,
-        privatekey,
-        passphrase,
-      );
-      // const cred2 = Cred.sshKeyNew(
-      //   username,
-      //   '../../backstage.pub',
-      //   '../../backstage',
-      //   passphrase,
-      // );
 
       const cloneOptions: CloneOptions = {
         fetchOpts: {
           callbacks: {
-            credentials: function (url: string, userName: string) {
-              return cred;
+            credentials: () => {
+              return Nodegit.Credential.sshKeyMemoryNew(
+                username,
+                publickey,
+                privatekey,
+                passphrase,
+              );
             },
           },
         },
       };
-      Clone(repoUrl, cloneDir, cloneOptions)
+      if (fs.existsSync(cloneDir)) {
+        fs.rmSync(cloneDir, { recursive: true, force: true });
+      }
+      ctx.logger.info(
+        `Cloning repoUrl: ${repoUrl} into ${ctx.workspacePath}/${targetPath}`,
+      );
+
+      fs.mkdirSync(cloneDir, { recursive: false });
+
+      Nodegit.Clone(repoUrl, cloneDir, cloneOptions)
         .then(repo => {
           ctx.logger.info(`Cloned ${repo.path()} into ${repo.workdir()}`);
+          return repo.getHeadCommit();
+        })
+        .then(commit => {
+          ctx.logger.info(`Commit message: ${commit.message()}`);
+          return commit.getEntry('test.txt');
+        })
+        .then(entry => {
+          return entry.getBlob();
+        })
+        .then(blob => {
+          ctx.logger.info(blob.toString());
+          return blob.toString();
         })
         .catch(err => {
           ctx.logger.error(`git-clone.ts: ${err}`);
           throw new Error(err);
         });
-      const numFiles = (await readdir(cloneDir)).length;
+      const numFiles = fs.readdirSync(cloneDir).length;
       ctx.output('files', numFiles);
-      ctx.logger.info(`Cloned ${numFiles} files`);
-
+      ctx.logger.info(`Contains ${numFiles} files`);
       ctx.logger.info(`Finished cloning ${repoUrl}`);
     },
   });

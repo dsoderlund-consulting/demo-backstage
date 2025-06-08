@@ -83,28 +83,43 @@ export const gitCommitPushAction = (options: { config: Config }) => {
         // && gpgPassphrase
       ) {
         const firstCommit = await Nodegit.Commit.lookup(repo, commitId);
-        const signedCommitId = await firstCommit
-          .amendWithSignature(
+        try {
+          const signedCommitId = await firstCommit.amendWithSignature(
             null,
             null,
             null,
             null,
             null,
             null,
-            dataToSign => {
-              return {
-                code: 0,
-                field: 'gpgsig',
-                signedData: signCommitData(dataToSign, gpgKey),
-              };
+            async (dataToSign: string) => {
+              try {
+                const signature = await signCommitData(
+                  dataToSign,
+                  gpgKey,
+                  gpgPassphrase, // Pass the passphrase
+                );
+                ctx.logger.debug(`Signature: ${signature}`);
+                return {
+                  code: 0, // Nodegit.Error.CODE.OK
+                  field: 'gpgsig',
+                  signedData: signature,
+                };
+              } catch (signError: any) {
+                ctx.logger.error(
+                  `Failed to sign commit data: ${signError.message}`,
+                );
+                return { code: -1, field: 'gpgsig' }; // Signal user callback failure
+              }
             },
-          )
-          .catch(err => {
-            ctx.logger.error(err);
-          });
-        ctx.logger.info(`Signed commit: ${signedCommitId}`);
+          );
+          ctx.logger.info(`Successfully signed commit: ${signedCommitId}`);
+        } catch (amendError: any) {
+          ctx.logger.error(
+            `Error amending commit with signature: ${amendError.message}`,
+          );
+          // signedCommitId will not be set or used further if this block is hit
+        }
       }
-
       // #endregion
       // #region Push
       const authCallbacks = getAuthCallbacks(

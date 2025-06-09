@@ -1,0 +1,68 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  build-and-push-frontend:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for frontend changes
+        uses: dorny/paths-filter@v2
+        id: filter-frontend
+        with:
+          filters: |
+            frontend:
+              - 'frontend/**'
+
+      - name: Build & push Docker image
+        if: steps.filter-frontend.outputs.frontend == 'true'
+        uses: mr-smithers-excellent/docker-build-push@v6
+        with:
+          image: {% raw %}${{ secrets.DOCKER_HUB_USERNAME }}{% endraw %}/${{ values.component }}-frontend
+          addLatest: true
+          addTimestamp: true
+          directory: ./frontend
+          dockerfile: ./frontend/Dockerfile
+          registry: docker.io
+          username: {% raw %}${{ secrets.DOCKER_HUB_USERNAME }}{% endraw %}
+          password: {% raw %}${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}{% endraw %}
+
+  build-and-push-backend:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for backend changes
+        uses: dorny/paths-filter@v2
+        id: filter-backend
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+
+      - name: Build & push Docker image
+        if: steps.filter-backend.outputs.backend == 'true'
+        uses: mr-smithers-excellent/docker-build-push@v6
+        with:
+          image: {% raw %}${{ secrets.DOCKER_HUB_USERNAME }}{% endraw %}/${{ values.component }}-backend
+          addLatest: true
+          addTimestamp: true
+          directory: ./backend
+          dockerfile: ./backend/Dockerfile
+          registry: docker.io
+          username: {% raw %}${{ secrets.DOCKER_HUB_USERNAME }}{% endraw %}
+          password: {% raw %}${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}{% endraw %}

@@ -2,6 +2,10 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: "${{ values.component }}-frontend"
+  links:
+    - url: https://${{ values.component }}.sam.dsoderlund.consulting
+      title: CI/CD Deployment
+      icon: website
 spec:
   type: website
   owner: ${{ values.team }}
@@ -12,6 +16,10 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: "${{ values.component }}-backend"
+  links:
+    - url: https://${{ values.component }}.sam.dsoderlund.consulting/api
+      title: CI/CD Deployment
+      icon: service
 spec:
   type: service
   owner: ${{ values.team }}
@@ -25,6 +33,13 @@ metadata:
   annotations:
     backstage.io/techdocs-ref: dir:.
     argocd/app-selector: "component=${{ values.component }}"
+  links:
+    - url: https://${{ values.component }}.sam.dsoderlund.consulting
+      title: CI/CD Deployment (frontend)
+      icon: website
+    - url: https://${{ values.component }}.sam.dsoderlund.consulting/api
+      title: CI/CD Deployment (backend)
+      icon: service
 spec:
   type: service
   owner: ${{ values.team }}

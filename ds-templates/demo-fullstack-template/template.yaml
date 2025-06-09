@@ -1,5 +1,4 @@
 apiVersion: scaffolder.backstage.io/v1beta3
-# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-template
 kind: Template
 metadata:
   name: demo-fullstack-template
@@ -24,7 +23,6 @@ spec:
           title: Include Ingress
           type: boolean
           description: Should the services have ingress?
-          ui:autofocus: false
         database:
           title: Include Database
           type: boolean
@@ -63,6 +61,7 @@ spec:
             - 'Dotnet 8 MVC (c#)'
             - 'Flask (python)'
             - 'Pode (pwsh)'
+
     - title: Choose a location for the new repo
       required:
         - repoUrl
@@ -78,7 +77,6 @@ spec:
               - dsoderlund-consulting
             allowedOwners:
               - dsoderlund-consulting
-
 
     - title: Gitops Repo configuration
       required:
@@ -113,17 +111,6 @@ spec:
           enumNames:
             - 'Registry inside Management and demo cluster'
             - 'Docker Hub'
-
-        # fetchDepth:
-        #   title: Fetch Depth
-        #   type: number
-        #   description: The number of commits to fetch, a depth of 0 is all commits
-        #   default: 1
-        # signCommit: 
-        #   title: Sign git commits
-        #   type: boolean
-        #   description: If true, all git commits will be signed if there is a gpg private signing key configured for the repo configuration
-        #   default: false
     
     - title: Metadata
       required:
@@ -133,6 +120,16 @@ spec:
         - namespace
         - team
       properties:
+        system:
+          title: System
+          type: string
+          description: Which system the component belongs to
+          default: none
+          ui:field: EntityPicker
+          ui:options:
+            catalogFilter:
+              - kind: system
+
         team:
           title: Team
           type: string
@@ -141,6 +138,7 @@ spec:
           ui:options:
             catalogFilter:
               - kind: Group
+
         cluster:
           title: CI/CD Cluster
           type: string
@@ -154,6 +152,7 @@ spec:
             - 'Management and demo cluster'
             - 'Development cluster'
             - 'Production cluster'
+
         project:
           title: Argo Project
           type: string
@@ -162,6 +161,7 @@ spec:
           enum:
             - default
             - demo
+
         namespace:
           title: Cluster Namespace
           type: string
@@ -171,21 +171,8 @@ spec:
             - demo
             - platform
             - dev
-        system:
-          title: System
-          type: string
-          description: Which system the component belongs to
-          default: none
-          ui:field: EntityPicker
-          ui:options:
-            catalogFilter:
-              - kind: system
-
-
-  # These steps are executed in the scaffolder backend, using data that we gathered
-  # via the parameters above.
+        
   steps:
-    # Each step executes an action, in this case one templates files into the working directory.
     - id: fetch-base
       name: Fetch Base
       action: fetch:template
@@ -236,7 +223,6 @@ spec:
         authorName: ${{ user.entity.metadata.name }}       # todo: gitAuthorName - and commiter should be "backstage"
         authorEmail: ${{ user.entity.spec.profile.email }} # todo: gitAuthorEmail
     
-    # This step publishes the contents of the working directory to GitHub.
     - id: publish
       name: Publish new repo
       action: publish:github
@@ -247,9 +233,8 @@ spec:
         repoUrl: ${{ parameters.repoUrl }}
         gitAuthorName: ${{ user.entity.metadata.name }}
         gitAuthorEmail: ${{ user.entity.spec.profile.email }}
-    
+        repoVisibility: public
 
-    # The final step is to register our new component in the catalog.
     - id: register
       name: Register
       action: catalog:register
@@ -257,7 +242,6 @@ spec:
         repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
         catalogInfoPath: '/catalog-info.yaml'
 
-  # Outputs are displayed to the user after a successful execution of the template.
   output:
     links:
       - title: Repository

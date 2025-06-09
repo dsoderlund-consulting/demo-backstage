@@ -21,12 +21,12 @@ spec:
           ui:options:
             rows: 5
         ingress:
-          title: Ingress
+          title: Include Ingress
           type: boolean
           description: Should the services have ingress?
           ui:autofocus: false
         database:
-          title: One Database please!
+          title: Include Database
           type: boolean
           description: would you like a postgres database with your order?
         frontend:
@@ -77,7 +77,7 @@ spec:
             allowedOrganizations:
               - dsoderlund-consulting
             allowedOwners:
-              - dsoderlund.consulting
+              - dsoderlund-consulting
 
 
     - title: Gitops Repo configuration
@@ -87,14 +87,14 @@ spec:
         - imageRepository
       properties:
         repoName:
-          title: repoName
+          title: Gitops Repo Name
           type: string
-          description: Repo Name
+          description: Which git repository to use for gitops
           ui:autofocus: true
         repoConfiguration:
-          title: repoConfiguration
+          title: Gitops Repo Configuration
           type: string
-          description: Repo Configuration
+          description: Which auth configuration to use to push commits to the gitops repo
           default: nas
           enum:
             - nas
@@ -111,7 +111,7 @@ spec:
             - images.mgmt.dsoderlund.consulting
             - docker.io/dsoderlund-consulting
           enumNames:
-            - 'Management and demo cluster'
+            - 'Registry inside Management and demo cluster'
             - 'Docker Hub'
 
         # fetchDepth:
@@ -142,7 +142,7 @@ spec:
             catalogFilter:
               - kind: Group
         cluster:
-          title: Cluster
+          title: CI/CD Cluster
           type: string
           description: Kubernetes Cluster for CI/CD
           default: mgmt
@@ -198,6 +198,7 @@ spec:
           database: ${{ parameters.database }}
           team: dsoderlund.consulting
           imageRepository: ${{ parameters.imageRepository }}
+          system: demo-system
 
     
     - id: gitops-clone
@@ -218,7 +219,7 @@ spec:
         values:
           cluster: ${{ parameters.cluster }}
           project: ${{ parameters.project }}
-          system: ${{ parameters.system }}
+          system: demo-system
           namespace: ${{ parameters.namespace }}
           team: dsoderlund.consulting
           component: ${{ parameters.component }}

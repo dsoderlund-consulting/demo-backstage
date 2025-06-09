@@ -1,0 +1,25 @@
+apiVersion: crossplane.dsoderlund.consulting/v1
+kind: FullstackApp
+metadata:
+  name: ${{ values.component | dump }}
+spec:
+  backend:
+    image: "${{ values.imageRepository }}/${{ values.component }}-backend:0.0.1"
+    replicas: 1
+    containerPort: 8080
+    databaseConnectionValues: true
+    extraEnvironmentVariables:
+      - name: ASPNETCORE_ENVIRONMENT
+        value: "Production"
+  frontend:
+    image: "${{ values.imageRepository }}/${{ values.component }}-frontend:0.0.1"
+    replicas: 1
+    containerPort: 80
+  {% if values.ingress %}
+  ingress:
+    hostname: "${{ values.component }}.sam.dsoderlund.consulting"
+  {% endif %}
+  {% if values.database %}
+  database:
+    replicas: 1
+  {% endif %}

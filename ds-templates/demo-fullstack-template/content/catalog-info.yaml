@@ -24,8 +24,9 @@ metadata:
   name: ${{ values.component | dump }}
   annotations:
     backstage.io/techdocs-ref: dir:.
+    argocd/app-selector: "component=${{ values.component }}"
 spec:
   type: service
   owner: ${{ values.team }}
   lifecycle: experimental
-
+  system: ${{ values.system }}

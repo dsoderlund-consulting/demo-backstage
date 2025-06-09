@@ -3,7 +3,7 @@ kind: Cluster
 product: kind
 registry: ctlptl-registry
 kindV1Alpha4Cluster:
-  name: demo-fullstack
+  name: ${{ values.component }}
   nodes:
   - role: control-plane
   - role: worker 

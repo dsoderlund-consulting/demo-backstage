@@ -39,7 +39,7 @@ export const gitCommitPushAction = (options: { config: Config }) => {
       const passphrase = gitConfig.getOptionalString('passphrase') ?? '';
       const gpgKey = ctx.input.signCommit
         ? gitConfig.getString('gpgKey')
-        : undefined;
+        : scaffolderDefaultConfig.getOptionalString('defaultCommitSigningKey');
       const gpgPassphrase = gitConfig.getOptionalString('gpgPassphrase');
       const authorName =
         ctx.input.authorName ??

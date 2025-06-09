@@ -26,7 +26,7 @@ import { searchPage } from './components/search/SearchPage';
 import { Root } from './components/Root';
 import LightIcon from '@material-ui/icons/WbSunny';
 import DarkIcon from '@material-ui/icons/NightsStay';
-
+import OpenInBrowserOutlinedIcon from '@material-ui/icons/OpenInBrowserOutlined';
 import {
   AlertDisplay,
   OAuthRequestDialog,
@@ -103,6 +103,9 @@ const app = createApp({
       }
       return <ProxiedSignInPage {...props} provider="oauth2Proxy" />;
     },
+  },
+  icons: {
+    website: OpenInBrowserOutlinedIcon,
   },
 });
 

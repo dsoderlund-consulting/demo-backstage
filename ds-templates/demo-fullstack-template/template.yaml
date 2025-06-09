@@ -8,15 +8,12 @@ metadata:
 spec:
   owner: group:dsoderlund.consulting
   type: service
-
-  # These parameters are used to generate the input form in the frontend, and are
-  # used to gather input data for the execution of the template.
   parameters:
-    - title: Fill in some steps
+    - title: Basic facts about the new fullstack app
       required:
-        - name
+        - component
       properties:
-        name:
+        component:
           title: Name
           type: string
           description: Unique name of the component
@@ -32,8 +29,41 @@ spec:
           title: One Database please!
           type: boolean
           description: would you like a postgres database with your order?
-
-    - title: Choose a location
+        frontend:
+          title: frontend
+          type: string
+          default: svelte
+          enum:
+            - svelte
+            - vite
+            - angular
+            - blazor
+            - django
+          enumNames:
+            - 'Svelte'
+            - 'React + Vite'
+            - 'Angular'
+            - 'Blazor'
+            - 'Django'
+        backend:
+          title: backend
+          type: string
+          default: nodejs
+          enum:
+            - nodejs
+            - rust
+            - golang
+            - dotnet
+            - flask
+            - pode
+          enumNames:
+            - 'NodeJs (typescript)'
+            - 'Rust'
+            - 'Golang'
+            - 'Dotnet 8 MVC (c#)'
+            - 'Flask (python)'
+            - 'Pode (pwsh)'
+    - title: Choose a location for the new repo
       required:
         - repoUrl
       properties:
@@ -46,7 +76,111 @@ spec:
               - github.com
             allowedOrganizations:
               - dsoderlund-consulting
-            
+            allowedOwners:
+              - dsoderlund.consulting
+
+
+    - title: Gitops Repo configuration
+      required:
+        - repoName
+        - repoConfiguration
+        - imageRepository
+      properties:
+        repoName:
+          title: repoName
+          type: string
+          description: Repo Name
+          ui:autofocus: true
+        repoConfiguration:
+          title: repoConfiguration
+          type: string
+          description: Repo Configuration
+          default: nas
+          enum:
+            - nas
+            - github
+          enumNames:
+            - 'nas.office.dsoderlund.consulting'
+            - 'github.com:dsoderlund-consulting'
+        imageRepository:
+          title: Image Repository
+          type: string
+          description: Container Image Repository
+          default: images.mgmt.dsoderlund.consulting
+          enum:
+            - images.mgmt.dsoderlund.consulting
+            - docker.io/dsoderlund-consulting
+          enumNames:
+            - 'Management and demo cluster'
+            - 'Docker Hub'
+
+        # fetchDepth:
+        #   title: Fetch Depth
+        #   type: number
+        #   description: The number of commits to fetch, a depth of 0 is all commits
+        #   default: 1
+        # signCommit: 
+        #   title: Sign git commits
+        #   type: boolean
+        #   description: If true, all git commits will be signed if there is a gpg private signing key configured for the repo configuration
+        #   default: false
+    
+    - title: Metadata
+      required:
+        - cluster
+        - project
+        - system
+        - namespace
+        - team
+      properties:
+        team:
+          title: Team
+          type: string
+          description: Owner of the new component
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              - kind: Group
+        cluster:
+          title: Cluster
+          type: string
+          description: Kubernetes Cluster for CI/CD
+          default: mgmt
+          enum:
+            - mgmt
+            - dev
+            - prod
+          enumNames:
+            - 'Management and demo cluster'
+            - 'Development cluster'
+            - 'Production cluster'
+        project:
+          title: Argo Project
+          type: string
+          description: Which project the component belongs to in gitops
+          default: default
+          enum:
+            - default
+            - demo
+        namespace:
+          title: Cluster Namespace
+          type: string
+          description: Which namespace the component belongs to in the cluster
+          default: demo
+          enum:
+            - demo
+            - platform
+            - dev
+        system:
+          title: System
+          type: string
+          description: Which system the component belongs to
+          default: none
+          ui:field: EntityPicker
+          ui:options:
+            catalogFilter:
+              - kind: system
+
 
   # These steps are executed in the scaffolder backend, using data that we gathered
   # via the parameters above.
@@ -59,19 +193,48 @@ spec:
         url: ./content
         targetPath: ./app
         values:
-          name: ${{ parameters.name }}
+          component: ${{ parameters.component }}
           ingress: ${{ parameters.ingress }}
           database: ${{ parameters.database }}
+          team: dsoderlund.consulting
+          imageRepository: ${{ parameters.imageRepository }}
+
+    
+    - id: gitops-clone
+      name: Clone Gitops Repo
+      action: git:clone
+      input:
+        repoName: ${{ parameters.repoName }}
+        repoConfiguration: ${{ parameters.repoConfiguration }}
+        targetPath: ./argocd
+        depth: 0
+    
     - id: fetch-gitops
-      name: Fetch gitops
+      name: Fetch gitops repo
       action: fetch:template
       input:
-        url: ./gitops
-        targetPath: ./gitops
+        url: ./argocd
+        targetPath: ./argocd
         values:
-          name: ${{ parameters.name }}
-          ingress: ${{ parameters.ingress }}
-          database: ${{ parameters.database }}
+          cluster: ${{ parameters.cluster }}
+          project: ${{ parameters.project }}
+          system: ${{ parameters.system }}
+          namespace: ${{ parameters.namespace }}
+          team: dsoderlund.consulting
+          component: ${{ parameters.component }}
+          imageRepository: ${{ parameters.imageRepository }}
+    
+    - id: gitops-commit-push
+      name: Commit and Push to Gitops Repo
+      action: git:commit-push
+      input:
+        repoPath: ./argocd
+        repoConfiguration: ${{ parameters.repoConfiguration }}
+        commitMessage: "Created component ${{ parameters.name }} in cluster ${{ parameters.cluster}}"
+        signCommit: true
+        authorName: ${{ user.entity.metadata.name }}       # todo: gitAuthorName - and commiter should be "backstage"
+        authorEmail: ${{ user.entity.spec.profile.email }} # todo: gitAuthorEmail
+    
     # This step publishes the contents of the working directory to GitHub.
     - id: publish
       name: Publish new repo

@@ -1,4 +1,4 @@
-# This is demo-fullstack
+# This is ${{ values.component }}
 
 This repository was created with the template 
 `demo-fullstack-template`.
@@ -62,11 +62,11 @@ By default the application once the images are pushed into the registry is deplo
 apiVersion: crossplane.dsoderlund.consulting/v1
 kind: FullstackApp
 metadata:
-  name: demo-fullstack
-  namespace: demo
+  name: ${{ values.component }}
+  namespace: default
 spec:
   backend:
-    image: images.mgmt.dsoderlund.consulting/demo-fullstack-backend:0.0.1
+    image: ${{ values.imageRepository }}/${{ values.component }}-backend:0.0.1
     replicas: 1
     containerPort: 8080
     databaseConnectionValues: true
@@ -74,11 +74,11 @@ spec:
       - name: ASPNETCORE_ENVIRONMENT
         value: Production
   frontend:
-    image: images.mgmt.dsoderlund.consulting/demo-fullstack-frontend:0.0.1
+    image: ${{ values.imageRepository }}/${{ values.component }}-frontend:0.0.1
     replicas: 1
     containerPort: 8081
   ingress:
-    hostname: demo-fullstack.sam.dsoderlund.consulting
+    hostname: ${{ values.component }}.sam.dsoderlund.consulting
   database:
     replicas: 1
 ```

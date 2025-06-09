@@ -1,5 +1,5 @@
 {
-  "name": "demo-fullstack-frontend",
+  "name": "${{ values.component }}-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",

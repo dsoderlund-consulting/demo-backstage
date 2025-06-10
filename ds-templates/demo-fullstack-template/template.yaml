@@ -107,7 +107,7 @@ spec:
           default: images.mgmt.dsoderlund.consulting
           enum:
             - images.mgmt.dsoderlund.consulting
-            - docker.io/dsoderlund-consulting
+            - docker.io/dsoderlund
           enumNames:
             - 'Registry inside Management and demo cluster'
             - 'Docker Hub'

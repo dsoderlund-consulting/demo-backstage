@@ -32,6 +32,9 @@ const featureLoader = createBackendFeatureLoader({
     if (config.getOptionalBoolean('customFeatureToggle.AuthGoogle')) {
       yield import('@backstage/plugin-auth-backend-module-google-provider');
     }
+    if (config.getOptionalBoolean('customFeatureToggle.AuthGithub')) {
+      yield import('@backstage/plugin-auth-backend-module-github-provider');
+    }
   },
 });
 
@@ -84,5 +87,7 @@ backend.add(import('@backstage/plugin-scaffolder-backend/alpha'));
 backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
 
 // And there was backend
-backend.add(import('@internal/backstage-plugin-scaffolder-backend-module-generic-git'));
+backend.add(
+  import('@internal/backstage-plugin-scaffolder-backend-module-generic-git'),
+);
 backend.start();

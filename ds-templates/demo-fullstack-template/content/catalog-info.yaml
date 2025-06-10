@@ -33,6 +33,7 @@ metadata:
   annotations:
     backstage.io/techdocs-ref: dir:.
     argocd/app-selector: "component=${{ values.component }}"
+    github.com/project-slug: dsoderlund-consulting/${{ values.component }}
   links:
     - url: https://${{ values.component }}.sam.dsoderlund.consulting
       title: CI/CD Deployment (frontend)

@@ -4,15 +4,9 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
-    types:
-      - closed
 
 jobs:
   build-and-push-frontend:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -25,6 +19,8 @@ jobs:
           filters: |
             frontend:
               - 'frontend/**'
+      - name: set SHORT_SHA
+        run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
 
       - name: Build & push Docker image
         if: steps.filter-frontend.outputs.frontend == 'true'
@@ -33,14 +29,21 @@ jobs:
           image: {% raw %}${{ secrets.DOCKER_HUB_USERNAME }}{% endraw %}/${{ values.component }}-frontend
           addLatest: true
           addTimestamp: true
+          tags: ${SHORT_SHA}
           directory: ./frontend
           dockerfile: ./frontend/Dockerfile
           registry: docker.io
           username: {% raw %}${{ secrets.DOCKER_HUB_USERNAME }}{% endraw %}
           password: {% raw %}${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}{% endraw %}
-
+      - name: Invoke demo-gitops image patch
+        if: steps.filter-frontend.outputs.frontend == 'true'
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: demo-gitops-update-app.yaml
+          repo: dsoderlund-consulting/demo-gitops
+          inputs: '{ "component": "${{ values.component }}", "subComponent": "frontend", "newTag": {% raw %}"${{ env.SHORT_SHA }}"{% endraw %} }'
+          token: {% raw %}"${{ secrets.DEMO_GITOPS_DISPATCH }}"{% endraw %}
   build-and-push-backend:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -53,6 +56,8 @@ jobs:
           filters: |
             backend:
               - 'backend/**'
+      - name: set SHORT_SHA
+        run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
 
       - name: Build & push Docker image
         if: steps.filter-backend.outputs.backend == 'true'
@@ -61,8 +66,17 @@ jobs:
           image: {% raw %}${{ secrets.DOCKER_HUB_USERNAME }}{% endraw %}/${{ values.component }}-backend
           addLatest: true
           addTimestamp: true
+          tags: ${SHORT_SHA}
           directory: ./backend
           dockerfile: ./backend/Dockerfile
           registry: docker.io
           username: {% raw %}${{ secrets.DOCKER_HUB_USERNAME }}{% endraw %}
           password: {% raw %}${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}{% endraw %}
+      - name: Invoke demo-gitops image patch
+        if: steps.filter-backend.outputs.backend == 'true'
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: demo-gitops-update-app.yaml
+          repo: dsoderlund-consulting/demo-gitops
+          inputs: '{ "component": "${{ values.component }}", "subComponent": "backend", "newTag": {% raw %}"${{ env.SHORT_SHA }}"{% endraw %} }'
+          token: {% raw %}"${{ secrets.DEMO_GITOPS_DISPATCH }}"{% endraw %}

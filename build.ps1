@@ -1,13 +1,16 @@
-$newversion = '0.3.5'
+$newversion = '0.3.6'
 $repo = 'docker.io/dsoderlund/demo-backstage'
 $image = "{0}:{1}" -f $repo, $newversion
+$latest = "{0}:{1}" -f $repo, 'latest'
 echo $image
 if(-not $pat) {
     $pat = Read-Host -Prompt "Docker PAT" -MaskInput
 }
 docker login -u dsoderlund docker.io -p $pat
 docker build -t $image .
+docker tag $image $latest
 docker push $image
+docker push $latest
 
 # if I wasn't using argocd image updater I would switch to this repo and commit the new version number to the version file of the app
 <#

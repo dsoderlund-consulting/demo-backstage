@@ -6,4 +6,8 @@ plugins/*/dist
 plugins/*/node_modules
 ds-templates
 build.ps1
+# Local configuration files
 *.local.yaml
+
+# Sensitive credentials
+*-credentials.yaml

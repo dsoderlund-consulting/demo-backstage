@@ -218,7 +218,7 @@ spec:
       input:
         repoPath: ./argocd
         repoConfiguration: ${{ parameters.repoConfiguration }}
-        commitMessage: "Created component ${{ parameters.name }} in cluster ${{ parameters.cluster}}"
+        commitMessage: "Created component ${{ parameters.component }} in cluster ${{ parameters.cluster}}"
         signCommit: true
         authorName: ${{ user.entity.metadata.name }}       # todo: gitAuthorName - and commiter should be "backstage"
         authorEmail: ${{ user.entity.spec.profile.email }} # todo: gitAuthorEmail
@@ -229,7 +229,7 @@ spec:
       input:
         sourcePath: ./app
         allowedHosts: ['github.com']
-        description: This is ${{ parameters.name }}
+        description: This is ${{ parameters.component }}
         repoUrl: ${{ parameters.repoUrl }}
         gitAuthorName: ${{ user.entity.metadata.name }}
         gitAuthorEmail: ${{ user.entity.spec.profile.email }}

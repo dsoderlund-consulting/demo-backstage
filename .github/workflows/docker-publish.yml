@@ -37,6 +37,7 @@ jobs:
           DEFAULT_BUMP: patch
 
       - name: Build & push Docker image
+        if: ${{ steps.semvar.outputs.part != 'none' }}
         uses: mr-smithers-excellent/docker-build-push@v6
         with:
           image: ${{ secrets.DOCKER_HUB_USERNAME }}/demo-backstage

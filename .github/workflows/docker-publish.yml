@@ -26,29 +26,34 @@ jobs:
         id: semver
         uses: paulhatch/semantic-version@v5.4.0
         with:
+          tag_prefix: "v"
           major_pattern: "MAJOR"
           minor_pattern: "MINOR"
           bump_each_commit: false
           search_commit_body: true
+          version_format: "v${major}.${minor}.${patch}"
+      
+      - name: show change
+        run: echo "${{ steps.semver.outputs.version_tag }} ${{ steps.semver.outputs.version_type }}"
 
       - name: set SHORT_SHA
         run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
 
-      - name: Build & push Docker image
-        uses: mr-smithers-excellent/docker-build-push@v6
-        if: steps.semver.outputs.version_type != 'none'
-        with:
-          image: ${{ secrets.DOCKER_HUB_USERNAME }}/demo-backstage
-          addLatest: true
-          addTimestamp: true
-          tags: ${SHORT_SHA},${{steps.semver.outputs.version}}
-          dockerfile: Dockerfile
-          registry: docker.io
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      # - name: Build & push Docker image
+      #   uses: mr-smithers-excellent/docker-build-push@v6
+      #   if: steps.semver.outputs.version_type != 'none'
+      #   with:
+      #     image: ${{ secrets.DOCKER_HUB_USERNAME }}/demo-backstage
+      #     addLatest: true
+      #     addTimestamp: true
+      #     tags: ${SHORT_SHA},${{steps.semver.outputs.version_tag}}
+      #     dockerfile: Dockerfile
+      #     registry: docker.io
+      #     username: ${{ secrets.DOCKER_HUB_USERNAME }}
+      #     password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
           
-      - name: Push git tag
-        if: steps.semver.outputs.version_type != 'none'
-        run: |
-          git tag ${{steps.semver.outputs.version}}
-          git push origin ${{steps.semver.outputs.version}}
+      # - name: Push git tag
+      #   if: steps.semver.outputs.version_type != 'none'
+      #   run: |
+      #     git tag ${{steps.semver.outputs.version_tag}}
+      #     git push origin ${{steps.semver.outputs.version_tag}}

@@ -1,11 +1,10 @@
-$newversion = '0.3.4'
+$newversion = '0.3.5'
 $repo = 'docker.io/dsoderlund/demo-backstage'
 $image = "{0}:{1}" -f $repo, $newversion
 echo $image
 if(-not $pat) {
     $pat = Read-Host -Prompt "Docker PAT" -MaskInput
 }
-docker images $image
 docker login -u dsoderlund docker.io -p $pat
 docker build -t $image .
 docker push $image

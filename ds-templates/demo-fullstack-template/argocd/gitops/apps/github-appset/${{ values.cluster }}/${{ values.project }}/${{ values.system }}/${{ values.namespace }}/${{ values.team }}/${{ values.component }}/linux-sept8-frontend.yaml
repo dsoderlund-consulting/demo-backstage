@@ -1,0 +1,9 @@
+apiVersion: crossplane.dsoderlund.consulting/v1
+kind: FullstackApp
+metadata:
+  name: __ignored__
+spec:
+  frontend:
+    image: ${{ values.imageRepository }}/${{ values.component }}-frontend:latest
+    replicas: 1
+    containerPort: 80

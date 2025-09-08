@@ -1,0 +1,13 @@
+apiVersion: crossplane.dsoderlund.consulting/v1
+kind: FullstackApp
+metadata:
+  name: __ignored__
+spec:
+  backend:
+    image: ${{ values.imageRepository }}/${{ values.component }}-backend:latest
+    replicas: 1
+    containerPort: 8080
+    databaseConnectionValues: true
+    extraEnvironmentVariables:
+      - name: ASPNETCORE_ENVIRONMENT
+        value: Production

@@ -23,42 +23,30 @@ jobs:
 
       - name: Fetch Tags
         run: git fetch --tags --force
-
-      - name: Generate Semantic Version
-        id: semver
-        uses: paulhatch/semantic-version@v5.4.0
-        with:
-          tag_prefix: "v"
-          major_pattern: "(MAJOR)"
-          minor_pattern: "(MINOR)"
-          bump_each_commit: false
-          search_commit_body: true
-          version_format: "${major}.${minor}.${patch}"
-          enable_prerelease_mode: false
-          debug: true
-          use_branches: false
       
       - name: set SHORT_SHA
         run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
 
-      - name: show change
-        run: echo "${{ steps.semver.outputs.version_tag }} - ${{ steps.semver.outputs.version_type }} - ${SHORT_SHA}" 
+      - name: Bump version and push tag
+        id: semvar
+        uses: anothrNick/github-tag-action@1.75.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_PREFIX: v
+          PRERELEASE: false
 
-      - name: Build & push Docker image
-        uses: mr-smithers-excellent/docker-build-push@v6
-        if: ${{ steps.semver.outputs.version_type != 'none' }}
-        with:
-          image: ${{ secrets.DOCKER_HUB_USERNAME }}/demo-backstage
-          addLatest: true
-          addTimestamp: true
-          tags: ${SHORT_SHA},${{steps.semver.outputs.version_tag}}
-          dockerfile: Dockerfile
-          registry: docker.io
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - name: show change
+        run: echo "${{ steps.semvar.outputs.new_tag }}"
+
+      # - name: Build & push Docker image
+      #   uses: mr-smithers-excellent/docker-build-push@v6
+      #   with:
+      #     image: ${{ secrets.DOCKER_HUB_USERNAME }}/demo-backstage
+      #     addLatest: true
+      #     addTimestamp: true
+      #     tags: ${SHORT_SHA},${{ steps.semvar.outputs.new_tag }}
+      #     dockerfile: Dockerfile
+      #     registry: docker.io
+      #     username: ${{ secrets.DOCKER_HUB_USERNAME }}
+      #     password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
           
-      - name: Push git tag
-        if: ${{ steps.semver.outputs.version_type != 'none' }}
-        run: |
-          git tag ${{steps.semver.outputs.version_tag}}
-          git push origin ${{steps.semver.outputs.version_tag}}

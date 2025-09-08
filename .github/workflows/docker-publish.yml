@@ -34,12 +34,15 @@ jobs:
           bump_each_commit: false
           search_commit_body: true
           version_format: "${major}.${minor}.${patch}"
+          enable_prerelease_mode: false
+          debug: true
+          use_branches: false
       
       - name: set SHORT_SHA
         run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
 
       - name: show change
-        run: echo "${{ steps.semver.outputs.version_tag }} - ${{ steps.semver.outputs.version_type }} - ${GITHUB_SHA}" 
+        run: echo "${{ steps.semver.outputs.version_tag }} - ${{ steps.semver.outputs.version_type }} - ${SHORT_SHA}" 
 
       - name: Build & push Docker image
         uses: mr-smithers-excellent/docker-build-push@v6

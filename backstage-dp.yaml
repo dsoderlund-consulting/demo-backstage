@@ -21,22 +21,22 @@ spec:
           configMap:
             optional: false
             name: backstage-config
-        - name: github-app-backstage
-          secret:
-            optional: false
-            secretName: github-app-backstage
-        - name: git-nas-backstage
-          secret:
-            optional: false
-            secretName: git-nas-backstage
-        - name: git-github-backstage
-          secret:
-            optional: false
-            secretName: git-github-backstage
-        - name: backstage-known-hosts
-          configMap:
-            optional: false
-            name: backstage-known-hosts
+        # - name: github-app-backstage
+        #   secret:
+        #     optional: false
+        #     secretName: github-app-backstage
+        # - name: git-nas-backstage
+        #   secret:
+        #     optional: false
+        #     secretName: git-nas-backstage
+        # - name: git-github-backstage
+        #   secret:
+        #     optional: false
+        #     secretName: git-github-backstage
+        # - name: backstage-known-hosts
+        #   configMap:
+        #     optional: false
+        #     name: backstage-known-hosts
           
       containers:
         - name: demo-backstage
@@ -50,6 +50,9 @@ spec:
           envFrom:
             - secretRef:
                 name: backstage-secret
+                optional: false
+            - secretRef:
+                name: backstage-redis
                 optional: false
             - configMapRef:
                 name: backstage-cm
@@ -65,22 +68,22 @@ spec:
             - name: backstage-config
               mountPath: "/app/ds-ref-platform-catalog-item.yaml"
               subPath: ds-ref-platform-catalog-item.yaml
-            - name: github-app-backstage
-              mountPath: "app/github-app-backstage-dsoderlund-credentials.yaml"
-              subPath: github-app-backstage-dsoderlund-credentials.yaml
-              readOnly: true
-            - name: git-github-backstage
-              mountPath: "app/git-github-credentials.yaml"
-              subPath: git-github-credentials.yaml
-              readOnly: true
-            - name: git-nas-backstage
-              mountPath: "app/git-nas-credentials.yaml"
-              subPath: git-nas-credentials.yaml
-              readOnly: true
-            - name: backstage-known-hosts
-              mountPath: "/home/node/.ssh/known_hosts"
-              subPath: known_hosts
-              readOnly: true
+            # - name: github-app-backstage
+            #   mountPath: "app/github-app-backstage-dsoderlund-credentials.yaml"
+            #   subPath: github-app-backstage-dsoderlund-credentials.yaml
+            #   readOnly: true
+            # - name: git-github-backstage
+            #   mountPath: "app/git-github-credentials.yaml"
+            #   subPath: git-github-credentials.yaml
+            #   readOnly: true
+            # - name: git-nas-backstage
+            #   mountPath: "app/git-nas-credentials.yaml"
+            #   subPath: git-nas-credentials.yaml
+            #   readOnly: true
+            # - name: backstage-known-hosts
+            #   mountPath: "/home/node/.ssh/known_hosts"
+            #   subPath: known_hosts
+            #   readOnly: true
           resources:
             limits:
               cpu: 1000m

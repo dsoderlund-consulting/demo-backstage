@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: default
+  name:  backstage-kc-client-secret
+type: Opaque
+stringData:
+  backstage-client-secret: xppw_nSd78surFpc0GdN9oSz3
+---
+apiVersion: openidclient.keycloak.crossplane.io/v1alpha1
+kind: Client
+metadata:
+  name: backstage
+  annotations:
+    "dsoderlund.consulting/managed-by": "crossplane"
+spec:
+  providerConfigRef:
+    name: keycloak-config
+  deletionPolicy: Delete
+  managementPolicies: ["*"]
+  forProvider:
+    import: false
+    accessType: "CONFIDENTIAL"
+    clientId: "backstage"
+    name: "backstage"
+    description: "A client to read keycloaks users and groups to populate backstages catalog"
+    realmId: "master"
+    serviceAccountsEnabled: true
+    clientSecretSecretRef:
+      namespace: default
+      name: backstage-kc-client-secret
+      key: backstage-client-secret
+---
+apiVersion: openidclient.keycloak.crossplane.io/v1alpha1
+kind: ClientServiceAccountRole
+metadata:
+  name: backstage-query-groups
+spec:
+  providerConfigRef:
+    name: keycloak-config
+  forProvider:
+    realmId: "master"
+    clientIdRef:
+      name: builtin-master-master-realm
+    serviceAccountUserClientIdRef:
+      name: backstage
+    role: query-groups
+---
+apiVersion: openidclient.keycloak.crossplane.io/v1alpha1
+kind: ClientServiceAccountRole
+metadata:
+  name: backstage-query-users
+spec:
+  providerConfigRef:
+    name: keycloak-config
+  forProvider:
+    realmId: "master"
+    clientIdRef:
+      name: builtin-master-master-realm
+    serviceAccountUserClientIdRef:
+      name: backstage
+    role: query-users
+---
+apiVersion: openidclient.keycloak.crossplane.io/v1alpha1
+kind: ClientServiceAccountRole
+metadata:
+  name: backstage-view-users
+spec:
+  providerConfigRef:
+    name: keycloak-config
+  forProvider:
+    realmId: "master"
+    clientIdRef:
+      name: builtin-master-master-realm
+    serviceAccountUserClientIdRef:
+      name: backstage
+    role: view-users

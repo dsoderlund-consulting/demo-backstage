@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: backstage-vs
+spec:
+  hosts:
+    - portal.platform.local
+  gateways:
+    - platform/platform-gateway
+  http:
+  - route:
+    - destination:
+        host: demo-backstage
+        port:
+          number: 7007

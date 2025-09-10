@@ -6,7 +6,7 @@ load('ext://helm_remote', 'helm_remote')
 # Deploy ds-ref-platform
 if not os.path.exists('../ds-ref-platform'):
   fail('Please "git clone" ds-ref-platform repo in ../ds-ref-platform!')
-local(['pwsh', '-WorkingDirectory', '../ds-ref-platform', '-Command', 'Invoke-Build -task 0,1,bootstrap -username ds -password davvapavva -email ds@dsoderlund.consulting'])
+# local(['pwsh', '-WorkingDirectory', '../ds-ref-platform', '-Command', 'Invoke-Build -task 0,1,bootstrap -username ds -password davvapavva -email ds@dsoderlund.consulting'])
 include('../ds-ref-platform/2_platform/Tiltfile')
 
 # Database
@@ -36,11 +36,11 @@ k8s_yaml(secret_yaml_generic(
   from_env_file=".env.tilt",
 ))
 
-k8s_yaml(secret_yaml_generic(
-  'github-app-backstage-dsoderlund-credentials',
-  namespace='default',
-  from_file="github-app-backstage-dsoderlund-credentials.yaml",
-))
+# k8s_yaml(secret_yaml_generic(
+#   'github-app-backstage-dsoderlund-credentials',
+#   namespace='default',
+#   from_file="github-app-backstage-dsoderlund-credentials.yaml",
+# ))
 
 configmap_create(
   'backstage-config',

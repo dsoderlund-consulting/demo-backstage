@@ -34,12 +34,12 @@ backend:
     
   cache:
     store: redis
-    connection: "redis://${REDIS_CLIENT}:${REDIS_SECRET}@${REDIS_HOST}:${REDIS_PORT}"
-integrations:
-  github:
-    - host: github.com
-      apps:
-        - $include: github-app-backstage-dsoderlund-credentials.yaml
+    connection: "redis://${REDIS_CLIENT}:${redis-password}@${REDIS_HOST}:${REDIS_PORT}"
+# integrations:
+#   github:
+#     - host: github.com
+#       apps:
+#         - $include: github-app-backstage-dsoderlund-credentials.yaml
 auth:
   environment: production
   providers:
@@ -103,6 +103,6 @@ customFeatureToggle:
   AuthOAuth2: true
   AuthGoogle: false
   AuthGithub: true
-genericGit:
-  github:
-    $include: git-github-credentials.yaml
+# genericGit:
+#   github:
+#     $include: git-github-credentials.yaml

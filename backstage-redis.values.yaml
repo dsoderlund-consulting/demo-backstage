@@ -1,7 +1,5 @@
 auth:
   enabled: true
-  existingSecret: backstage-secret
-  existingSecretPasswordKey: REDIS_SECRET
 architecture: "standalone"
 master:
   service:

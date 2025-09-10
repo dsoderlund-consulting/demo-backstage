@@ -46,13 +46,27 @@ bun run dev
 
 ## To test out with kubernetes
 
-`ctlptl apply -f kind-cluster.yaml && tilt up`
+First make sure you have cloned the gitrepo ds-ref-platform which includes the foundational platform infra that this repo runs on.
+
+You also need to initialize and bootstrap that repo with Invoke-Build if you haven't done so. This will create credentials for you, a root certificate, a kind cluster, and configuration to get started.
+
+``` PowerShell
+push-location ..
+if(!(Test-Path ds-ref-platform)){git clone https://github.com/QuadmanSWE/ds-ref-platform.git}
+push-location ds-ref-platform
+Invoke-Build init, local_dns, 0, 1 -additionalHostnames ${{ values.component }}
+pop-location; pop-location
+```
+
+Once that is done run tilt up.
+
+`tilt up`
 
 Press space when promted by tilt to see the deployment in your browser, and when viewing the resource groups for frontend/backend there should be links to reach them.
 
-Frontend: http://localhost:8081/
+Frontend: https://${{ values.component }}.platform.local/
 
-Backend api docs: http://localhost:8080/swagger/
+Backend api docs: https://${{ values.component }}.platform.local/swagger
 
 ## Deployment
 

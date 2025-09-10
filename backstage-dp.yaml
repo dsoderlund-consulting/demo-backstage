@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backstage-deployment
+  labels: 
+    app: demo-backstage
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-backstage
+  template:
+    metadata:
+      labels:
+        app: demo-backstage
+    spec:
+      volumes:
+        - name: backstage-config
+          configMap:
+            optional: false
+            name: backstage-config
+        - name: github-app-backstage
+          secret:
+            optional: false
+            secretName: github-app-backstage
+        - name: git-nas-backstage
+          secret:
+            optional: false
+            secretName: git-nas-backstage
+        - name: git-github-backstage
+          secret:
+            optional: false
+            secretName: git-github-backstage
+        - name: backstage-known-hosts
+          configMap:
+            optional: false
+            name: backstage-known-hosts
+          
+      containers:
+        - name: demo-backstage
+          image: demo-backstage
+          command:
+            - node
+            - packages/backend
+          args:
+            - "--config"
+            - "app-config.production.yaml"
+          envFrom:
+            - secretRef:
+                name: backstage-secret
+                optional: false
+            - configMapRef:
+                name: backstage-cm
+                optional: false
+          ports:
+            - name: backend
+              containerPort: 7007
+              protocol: TCP
+          volumeMounts:
+            - name: backstage-config
+              mountPath: "/app/app-config.production.yaml"
+              subPath: app-config.production.yaml
+            - name: backstage-config
+              mountPath: "/app/ds-ref-platform-catalog-item.yaml"
+              subPath: ds-ref-platform-catalog-item.yaml
+            - name: github-app-backstage
+              mountPath: "app/github-app-backstage-dsoderlund-credentials.yaml"
+              subPath: github-app-backstage-dsoderlund-credentials.yaml
+              readOnly: true
+            - name: git-github-backstage
+              mountPath: "app/git-github-credentials.yaml"
+              subPath: git-github-credentials.yaml
+              readOnly: true
+            - name: git-nas-backstage
+              mountPath: "app/git-nas-credentials.yaml"
+              subPath: git-nas-credentials.yaml
+              readOnly: true
+            - name: backstage-known-hosts
+              mountPath: "/home/node/.ssh/known_hosts"
+              subPath: known_hosts
+              readOnly: true
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+            requests:
+              cpu: 250m
+              memory: 500Mi
+          readinessProbe:
+            httpGet: 
+              path: "/.backstage/health/v1/readiness"
+              port: backend
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          livenessProbe:
+            httpGet: 
+              path: "/.backstage/health/v1/liveness"
+              port: backend
+            initialDelaySeconds: 30
+            periodSeconds: 10

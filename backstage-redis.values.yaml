@@ -1,0 +1,10 @@
+auth:
+  enabled: true
+  existingSecret: backstage-secret
+  existingSecretPasswordKey: REDIS_SECRET
+architecture: "standalone"
+master:
+  service:
+    port: 6379
+replica:
+  replicaCount: 1

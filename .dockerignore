@@ -6,8 +6,15 @@ plugins/*/dist
 plugins/*/node_modules
 ds-templates
 build.ps1
+
 # Local configuration files
 *.local.yaml
 
 # Sensitive credentials
 *-credentials.yaml
+*.local.yaml
+
+#tilt stuff
+cnpg
+ds-ref-platform
+Tiltfile

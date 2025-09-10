@@ -7,7 +7,7 @@ load('ext://helm_remote', 'helm_remote')
 if not os.path.exists('../ds-ref-platform'):
   fail('Please "git clone" ds-ref-platform repo in ../ds-ref-platform!')
 # local(['pwsh', '-WorkingDirectory', '../ds-ref-platform', '-Command', 'Invoke-Build -task 0,1,bootstrap -username ds -password davvapavva -email ds@dsoderlund.consulting'])
-include('../ds-ref-platform/2_platform/Tiltfile')
+include('../ds-ref-platform/3_gitops/Tiltfile')
 
 # Database
 k8s_yaml('cnpg/postgres-cluster.yaml')
@@ -46,12 +46,14 @@ configmap_create(
   'backstage-config',
   from_file=["app-config.production.yaml=app-config.production.yaml,ds-ref-platform-catalog-item.yaml=ds-ref-platform-catalog-item.local.yaml"]
 )
+k8s_yaml('backstage-cm.yaml')
+k8s_yaml('backstage-svc.yaml')
+k8s_yaml('backstage-vs.yaml')
 docker_build('demo-backstage','.')
 k8s_yaml('backstage-dp.yaml')
 k8s_resource(
   workload='backstage-deployment',
   labels='backstage',
-  port_forwards=7007,
   resource_deps=['database']
 )
 

@@ -56,11 +56,11 @@ catalog:
         baseUrl: ${KEYCLOAK_URL}
         loginRealm: ${KEYCLOAK_REALM}
         realm: ${KEYCLOAK_REALM}
-        clientId: ${KEYCLOAK_CLIENTID}
-        clientSecret: ${KEYCLOAK_CLIENTSECRET}
+        clientId: ${KEYCLOAK_CLIENT_ID}
+        clientSecret: ${KEYCLOAK_CLIENT_SECRET}
         schedule: # Mandatory; same options as in TaskScheduleDefinition
           # supports cron, ISO duration, "human duration" as used in code
-          frequency: { minutes: 30 } # Customize this to fit your needs
+          frequency: { minutes: 3 } # Customize this to fit your needs
           # supports ISO duration, "human duration" as used in code
           timeout: { minutes: 3 } # Customize this to fit your needs
           initialDelay: { seconds: 15 } # Customize this to fit your needs
@@ -98,6 +98,15 @@ kubernetes:
             $file: /var/run/secrets/kubernetes.io/serviceaccount/token
 permission:
   enabled: true
+proxy:
+  '/argocd/api':
+    target: https://argocd.platform.local
+    changeOrigin: true
+    secure: true
+    headers:
+      Cookie: argocd.token=${ARGOCD_AUTH_TOKEN}
+argocd:
+  baseUrl: https://argocd.mgmt.dsoderlund.consulting
 customFeatureToggle:
   OrgKeycloak: true
   AuthOAuth2: true

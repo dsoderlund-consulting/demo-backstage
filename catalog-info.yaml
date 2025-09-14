@@ -5,6 +5,7 @@ metadata:
   description: An open source framework for building developer portals
   annotations:
     argocd/app-selector: "component=backstage"
+    github.com/project-slug: dsoderlund-consulting/demo-backstage
   tags:
     - typescript
     - postgres

@@ -5,7 +5,7 @@ load('ext://configmap', 'configmap_create')
 # Deploy ds-ref-platform
 if not os.path.exists('../ds-ref-platform'):
   fail('Please "git clone" ds-ref-platform repo to ../ds-ref-platform and follow the instructions in the README.md!')
-include('../ds-ref-platform/3_gitops/Tiltfile')
+include('../ds-ref-platform/2_platform/Tiltfile')
 
 # Database
 k8s_yaml('kubernetes/postgres-cluster.yaml')
@@ -35,7 +35,11 @@ deployment_create(
 docker_build(
   "frontend",
   "frontend",
-  dockerfile="frontend/tilt.dockerfile" # we want another docker file when running in dev in kubernetes, since the default one is just compiling for nginx.
+  dockerfile="frontend/tilt.dockerfile", # we want another docker file when running in dev in kubernetes, since the default one is just compiling for nginx.
+  live_update=[
+    sync('frontend', '/app'),
+    run('cd /app && npm install', trigger=['frontend/package.json']),
+  ]
 )
 
 

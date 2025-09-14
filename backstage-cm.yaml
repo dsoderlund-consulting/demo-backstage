@@ -16,7 +16,8 @@ data:
   LOG_LEVEL: info
   KEYCLOAK_REALM: master
   KEYCLOAK_CLIENT_ID: backstage
-  KEYCLOAK_URL: https://auth.dsoderlund.consulting
+  #KEYCLOAK_URL: https://auth.dsoderlund.consulting
+  KEYCLOAK_URL: https://kc.platform.local
 ---
 apiVersion: v1
 kind: ConfigMap

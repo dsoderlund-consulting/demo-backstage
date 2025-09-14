@@ -57,6 +57,17 @@ spec:
             - configMapRef:
                 name: backstage-cm
                 optional: false
+          env:
+            - name: uri
+              valueFrom:
+                secretKeyRef:
+                  name: backstage-postgres-cluster-app
+                  key: uri
+            - name: KEYCLOAK_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backstage-kc-client-secret
+                  key: backstage-client-secret
           ports:
             - name: backend
               containerPort: 7007

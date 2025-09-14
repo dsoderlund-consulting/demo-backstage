@@ -1,14 +1,13 @@
-load('ext://git_resource', 'git_checkout')
 load('ext://deployment', 'deployment_create')
 load('ext://configmap', 'configmap_create')
 load('ext://secret', 'secret_yaml_generic')
 load('ext://helm_remote', 'helm_remote')
 
 # Deploy ds-ref-platform
-#git_checkout('https://github.com/quadmanswe/ds-ref-platform.git#main', './ds-ref-platform')
-local(['pwsh', '-WorkingDirectory', 'ds-ref-platform', '-Command', 'Invoke-Build -task bootstrap -username ds -password lelle -email ds@dsoderlund.consulting'])
-
-include('/ds-ref-platform/2_platform/Tiltfile')
+if not os.path.exists('../ds-ref-platform'):
+  fail('Please "git clone" ds-ref-platform repo in ../ds-ref-platform!')
+local(['pwsh', '-WorkingDirectory', '../ds-ref-platform', '-Command', 'Invoke-Build -task 0,1,bootstrap -username ds -password davvapavva -email ds@dsoderlund.consulting'])
+include('../ds-ref-platform/2_platform/Tiltfile')
 
 # Database
 k8s_yaml('cnpg/postgres-cluster.yaml')

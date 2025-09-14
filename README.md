@@ -10,3 +10,10 @@ To start the app, run:
 yarn install
 yarn start
 ```
+
+
+To run with tilt to get the local kubernetes experience, first create a `.env.tilt` file and populate it.
+Then run:
+```sh
+tilt up
+```

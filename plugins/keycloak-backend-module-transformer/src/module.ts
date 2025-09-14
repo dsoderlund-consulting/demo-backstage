@@ -15,7 +15,11 @@ const customGroupTransformer: GroupTransformer = async (
   // realm,
   // groups,
 ) => {
-  entity.metadata.links = group.attributes?.link.map((l: string) => {
+
+  // maps any attributes with the key "link" so that their values become urls.
+  const key = 'link'
+  if(group.attributes && group.attributes[key])
+  entity.metadata.links = group.attributes[key].map((l: string) => {
     return { url: l };
   });
   entity.metadata.annotations = {
